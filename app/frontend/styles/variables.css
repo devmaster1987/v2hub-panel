@@ -1,0 +1,38 @@
+/**
+ * Design tokens and CSS variables
+ */
+
+:root {
+  /* Colors */
+  --bg: #08111f;
+  --bg2: #0d1727;
+  --panel: rgba(15, 23, 40, 0.82);
+  --panel2: rgba(18, 28, 46, 0.94);
+  --card: rgba(255, 255, 255, 0.04);
+  --line: rgba(255, 255, 255, 0.08);
+  --line2: rgba(255, 255, 255, 0.14);
+  --text: #eff4fb;
+  --muted: #9db0c8;
+  --hint: #7488a0;
+  --accent: #5ca7ff;
+  --accent2: #37c0f2;
+  --success: #4ade80;
+  --warning: #fbbf24;
+  --danger: #fb7185;
+
+  /* Effects */
+  --shadow: 0 16px 46px rgba(0, 0, 0, 0.34);
+  --blur: blur(18px);
+
+  /* Border radius */
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 22px;
+  --radius-xl: 28px;
+
+  /* Transitions */
+  --t: 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* Layout */
+  --container: 1180px;
+}

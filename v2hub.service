@@ -1,0 +1,39 @@
+[Unit]
+Description=V2Hub Panel
+Documentation=https://github.com/nestthub/v2hub-panel
+After=network.target
+Wants=network.target
+
+[Service]
+Type=exec
+User=v2hub
+Group=v2hub
+WorkingDirectory=/opt/v2hub/app
+
+# Use venv if present, otherwise system python
+ExecStart=/opt/v2hub/venv/bin/uvicorn app.main:app \
+    --host 127.0.0.1 \
+    --port 8000 \
+    --workers 2 \
+    --log-level info \
+    --no-access-log
+
+Restart=on-failure
+RestartSec=5
+
+# Environment
+EnvironmentFile=-/opt/v2hub/app/.env
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/v2hub/app
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=v2hub
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,41 @@
+services:
+  app:
+    build:
+      context: ./app
+      dockerfile: ../Dockerfile
+    container_name: v2hub_app
+    restart: unless-stopped
+    env_file:
+      - ./app/.env
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: v2hub_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/v2hub.conf:ro
+      - ./nginx/proxy_params:/etc/nginx/proxy_params:ro
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"    
+    depends_on:
+      app:
+        condition: service_healthy
+
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"

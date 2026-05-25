@@ -1,0 +1,641 @@
+/**
+ * Layout styles
+ */
+
+.app-shell {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
+
+.app {
+  width: min(100%, var(--container));
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 32px;
+}
+
+/* Topbar */
+.topbar {
+  position: sticky;
+  top: 16px;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  background: linear-gradient(
+    180deg,
+    rgba(14, 22, 38, 0.84),
+    rgba(14, 22, 38, 0.72)
+  );
+  backdrop-filter: var(--blur);
+  box-shadow: var(--shadow);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.brand-mark {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: #fff;
+  background: linear-gradient(
+    135deg,
+    rgba(92, 167, 255, 0.22),
+    rgba(55, 192, 242, 0.16)
+  );
+  border: 1px solid rgba(92, 167, 255, 0.22);
+}
+
+.brand-copy {
+  min-width: 0;
+}
+
+.brand-title {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.brand-subtitle {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.topbar-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Main layout */
+.layout {
+  display: grid;
+  grid-template-columns: 390px 1fr;
+  gap: 16px;
+  min-height: calc(100vh - 112px);
+  min-width: 0;
+}
+
+/* App shell gets a minimum so elements never crush — horizontal scroll appears instead */
+.app-shell {
+  min-width: 320px;
+}
+
+.panel {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  background: linear-gradient(
+    180deg,
+    rgba(14, 22, 38, 0.8),
+    rgba(14, 22, 38, 0.66)
+  );
+  backdrop-filter: var(--blur);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.screen {
+  display: none;
+}
+
+.screen.active {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Panel header */
+.detail-head {
+  padding: 18px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent);
+}
+
+.detail-title {
+  font-size: 20px;
+  font-weight: 850;
+  letter-spacing: -0.03em;
+}
+
+.detail-subtitle {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.section {
+  padding: 18px;
+}
+
+.content {
+  padding: 18px;
+}
+
+/* Editor shell */
+.editor-shell {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  min-width: 0;
+}
+
+/* Tab content: scrolls only when content overflows */
+.tab-content {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: 8px;
+  /* Minimum height so content stays usable */
+  min-block-size: 200px;
+}
+
+/* Tab panels: hidden by default, shown via JS style.display */
+/* Default state — JS sets display:flex when active */
+#tab-sources,
+#tab-preview,
+#tab-export {
+  flex-direction: column;
+}
+
+/* Responsive */
+@media (max-width: 1280px) {
+  .layout {
+    grid-template-columns: 1fr;
+    /* Single column — give it a minimum so it never crushes */
+    min-width: 360px;
+  }
+}
+
+@media (max-width: 720px) {
+  .app-shell {
+    padding: 12px;
+  }
+
+  .topbar {
+    top: 12px;
+    border-radius: 22px;
+    padding: 12px 14px;
+  }
+
+  .brand-mark {
+    width: 38px;
+    height: 38px;
+    border-radius: 13px;
+  }
+
+  .brand-title {
+    font-size: 16px;
+  }
+
+  .layout {
+    gap: 12px;
+  }
+
+  .section,
+  .content {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .detail-head {
+    flex-direction: column;
+  }
+
+  .topbar-actions {
+    gap: 8px;
+  }
+}
+
+/* Source item with comment */
+.source-item {
+  display: grid;
+  grid-template-columns: 24px 10px minmax(0, 1fr) auto auto;
+  gap: 12px;
+  align-items: start;
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+  min-width: 0;
+  transition:
+    border-color var(--t),
+    background var(--t),
+    transform var(--t),
+    opacity var(--t);
+}
+
+.source-info {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.source-comment {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 2px 0;
+}
+
+/* Mobile adjustments */
+@media (max-width: 720px) {
+  .source-item {
+    grid-template-columns: 24px 10px minmax(0, 1fr);
+    grid-template-areas:
+      "drag dot info"
+      "drag dot meta"
+      ". . actions";
+    align-items: start;
+  }
+
+  .source-item > .drag-handle {
+    grid-area: drag;
+    align-self: center;
+  }
+
+  .source-item > .source-status {
+    grid-area: dot;
+    align-self: start;
+    margin-top: 4px;
+  }
+
+  .source-item > .source-info {
+    grid-area: info;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .source-item > .badge-type {
+    grid-area: meta;
+    justify-self: start;
+    margin-top: 4px;
+  }
+
+  .source-item > .source-actions {
+    grid-area: actions;
+    justify-content: flex-end;
+    margin-top: 4px;
+    margin-left: 0;
+  }
+}
+
+/* ===========================
+   Adaptive overflow fixes
+   =========================== */
+
+/* Desktop: preview-box and export-value scroll horizontally inside their containers */
+.preview-box {
+  overflow-x: auto;
+  overflow-y: auto;
+}
+
+.export-value {
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: thin;
+}
+
+.detail-head {
+  overflow: hidden;
+}
+
+.detail-title,
+.detail-subtitle {
+  overflow-wrap: break-word;
+  word-break: break-word;
+  min-width: 0;
+}
+
+/* Preview & Export mobile fixes */
+@media (max-width: 720px) {
+  /* Preview: 2 columns instead of 3 */
+  .preview-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* preview-box: allow horizontal scroll internally */
+  .preview-box {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  /* Export box: truncate correctly */
+  .export-box {
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .export-value {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Export actions: 2 cols, last full width */
+  .export-actions {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .export-actions .btn:last-child {
+    grid-column: 1 / -1;
+  }
+
+  /* Tabs: smaller on phone */
+  .tabs {
+    padding: 12px 14px 0;
+    gap: 6px;
+  }
+
+  .tab {
+    height: 38px;
+    padding: 0 12px;
+    font-size: 13px;
+  }
+}
+
+/* Extra-small screens */
+@media (max-width: 400px) {
+  /* Preview: stack to 1 column */
+  .preview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .preview-value {
+    font-size: 22px;
+  }
+
+  /* Export: stack all buttons */
+  .export-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .export-actions .btn:last-child {
+    grid-column: auto;
+  }
+}
+
+/* Toolbar wraps on very small screens */
+@media (max-width: 360px) {
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .toolbar .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ===========================
+   Desktop production fixes
+   =========================== */
+
+@media (min-width: 769px) {
+  /* Editor panel: min-width so items never get crushed, max-width for readability */
+  #screen-editor {
+    overflow: hidden;
+    min-width: 0;
+  }
+
+  /* detail-head action buttons must never wrap or overflow */
+  .detail-head > div:last-child {
+    flex-shrink: 0;
+  }
+
+  /* Tabs bar: scrollable, never pushes the panel wider */
+  .tabs {
+    flex-shrink: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  /* tab-content area: scrolls internally on desktop */
+  .tab-content {
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex: 1 1 0;
+  }
+
+  /* Export tab: value is scrollable horizontally */
+  .export-box {
+    overflow: hidden;
+    min-width: 0;
+  }
+
+  #tab-export {
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .copy-btn {
+    flex-shrink: 0;
+  }
+}
+
+/* Screen-list scrolls internally on desktop */
+@media (min-width: 769px) {
+  #screen-list {
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+}
+
+/* ── About popup ─────────────────────────────────────────────────────────── */
+.brand-mark {
+  /* Make it behave as a button while keeping existing visual */
+  cursor: pointer;
+  background: linear-gradient(
+    135deg,
+    rgba(92, 167, 255, 0.22),
+    rgba(55, 192, 242, 0.16)
+  );
+  border: 1px solid rgba(92, 167, 255, 0.22);
+  color: #fff;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  transition: background var(--t), border-color var(--t);
+  position: relative;
+}
+
+.brand-mark:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(92, 167, 255, 0.34),
+    rgba(55, 192, 242, 0.26)
+  );
+  border-color: rgba(92, 167, 255, 0.4);
+}
+
+.about-popup {
+  position: fixed; /* initial value; JS overrides top/left every frame */
+  z-index: 120;
+  min-width: 210px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: linear-gradient(
+    180deg,
+    rgba(16, 24, 40, 0.98),
+    rgba(13, 21, 35, 0.98)
+  );
+  backdrop-filter: var(--blur);
+  box-shadow: var(--shadow);
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.96) translateY(-6px);
+  transform-origin: top left;
+  transition:
+    opacity var(--t),
+    transform var(--t);
+}
+
+.about-popup.open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1) translateY(0);
+}
+
+.about-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+
+.about-version {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+  margin-bottom: 12px;
+}
+
+.about-links {
+  display: flex;
+  gap: 6px;
+}
+
+.about-link {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.03);
+  text-decoration: none;
+  transition:
+    color var(--t),
+    background var(--t),
+    border-color var(--t);
+}
+
+.about-link:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(92, 167, 255, 0.35);
+}
+
+/* brand wrapper needs relative so popup positions off it */
+.brand {
+  position: relative;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE: undo all fixed-height scroll-traps — page scrolls instead
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  /* Layout must not have a fixed min-height on mobile */
+  .layout {
+    min-height: 0 !important;
+  }
+
+  /* tab-content: remove the 200px floor and internal scroll */
+  .tab-content {
+    min-block-size: 0 !important;
+    overflow: visible !important;
+    flex: none !important;
+    height: auto !important;
+    /* Ensure content inside doesn't bleed out */
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* editor-shell: don't flex-fill, just wrap content */
+  .editor-shell {
+    flex: none !important;
+    overflow: visible !important;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Screens don't scroll internally on mobile */
+  .screen.active {
+    overflow: visible !important;
+    flex: none !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  /* Desktop-only overrides: disable on mobile */
+  #screen-list,
+  #screen-editor,
+  #tab-export {
+    overflow: visible !important;
+  }
+
+  /* Panel itself must not clip content */
+  .panel {
+    overflow: visible !important;
+    height: auto !important;
+  }
+
+  /* Export grid and blocks: full width, no overflow */
+  .export-grid {
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .export-block {
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+}

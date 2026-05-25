@@ -1,0 +1,549 @@
+/**
+ * Mobile overrides
+ */
+
+/* ─────────────────────────────────────────────────────────────
+   Global safety: prevent horizontal bleed, allow vertical scroll
+   ───────────────────────────────────────────────────────────── */
+html {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  min-height: 100vh;
+  min-height: 100dvh;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Root app shell should not trap scroll */
+.app-shell {
+  width: 100%;
+  max-width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Base mobile layout
+   ───────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Kill the fixed viewport grid — let everything flow naturally */
+  .layout {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 100%;
+    min-height: 0;
+    gap: 8px;
+  }
+
+  /* Panel: no overflow clipping, height is content-driven */
+  .panel {
+    overflow: visible !important;
+    min-height: 0 !important;
+    flex: none !important;
+    height: auto !important;
+  }
+
+  /* Screens: hidden/shown but never fixed height */
+  .screen {
+    display: none !important;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    min-height: 0;
+    overflow: visible !important;
+  }
+
+  .screen.active {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    /* No fixed height — grow with content */
+    height: auto !important;
+    flex: none !important;
+    overflow: visible !important;
+  }
+
+  /* editor-shell: natural height, not flex-fill */
+  .editor-shell {
+    flex: none !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* tab-content: no internal scroll on mobile — page scrolls instead */
+  .tab-content {
+    overflow: visible !important;
+    flex: none !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    height: auto !important;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Prevent content inside tabs from breaking out */
+  .tab-content > * {
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Small phones
+   ───────────────────────────────────────────────────────────── */
+@media (max-width: 520px) {
+  .app-shell {
+    padding: 8px;
+  }
+
+  .app {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  /* Topbar */
+  .topbar {
+    position: sticky;
+    top: 8px;
+    z-index: 20;
+    padding: 10px 12px;
+    border-radius: 18px;
+    backdrop-filter: blur(10px);
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .brand-mark {
+    width: 34px;
+    height: 34px;
+    font-size: 13px;
+    flex: 0 0 auto;
+  }
+
+  .brand-title {
+    font-size: 15px;
+    line-height: 1.2;
+  }
+
+  .brand-subtitle {
+    font-size: 11px;
+    line-height: 1.2;
+  }
+
+  /* Main content should scroll naturally */
+  .layout {
+    gap: 8px;
+    min-height: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .panel {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow: visible;
+  }
+
+  .detail-head {
+    padding: 14px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow: visible;
+    min-width: 0;
+  }
+
+  .detail-head > div:last-child {
+    flex-shrink: 0;
+  }
+
+  .detail-title {
+    font-size: 17px;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    min-width: 0;
+  }
+
+  .detail-subtitle {
+    font-size: 12px;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .section,
+  .content {
+    padding: 12px;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow: visible;
+  }
+
+  /* Keep flex children from forcing overflow */
+  .section > *,
+  .content > * {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  /* ─── Tabs ───────────────────────────────────────────────── */
+  /* On mobile, tab-content expands naturally — body scrolls instead */
+  .tab-content {
+    overflow: visible;
+    min-height: 0;
+    flex: none;
+  }
+
+  .tabs {
+    padding: 10px 12px 0;
+    gap: 6px;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tab {
+    height: 36px;
+    padding: 0 12px;
+    font-size: 13px;
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  /* ─── Sources tab ────────────────────────────────────────── */
+  .sources-toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .sources-toolbar .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .sources-list {
+    width: 100%;
+    max-width: 100%;
+    overflow: visible;
+  }
+
+  .source-item {
+    display: grid !important;
+    grid-template-columns: 24px 10px minmax(0, 1fr) !important;
+    grid-template-areas:
+      "drag dot info"
+      "drag dot badge"
+      ".    .   actions" !important;
+    gap: 4px 8px !important;
+    padding: 12px !important;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow: visible;
+    align-items: start;
+  }
+
+  .source-item > .drag-handle {
+    grid-area: drag !important;
+    align-self: center;
+    flex: 0 0 auto;
+  }
+
+  .source-item > .source-status {
+    grid-area: dot !important;
+    align-self: start;
+    margin-top: 3px;
+    flex: 0 0 auto;
+  }
+
+  .source-item > .source-info {
+    grid-area: info !important;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .source-data,
+  .source-comment {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .source-item > .badge-type {
+    grid-area: badge !important;
+    justify-self: start;
+    margin-top: 2px;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .source-item > .source-actions {
+    grid-area: actions !important;
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+    margin-top: 6px;
+    margin-left: 0;
+    min-width: 0;
+    flex-wrap: wrap;
+  }
+
+  /* ─── Preview tab ────────────────────────────────────────── */
+  #tab-preview {
+    width: 100%;
+    max-width: 100%;
+    overflow: visible;
+  }
+
+  .preview-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .preview-card {
+    padding: 10px 8px;
+    min-width: 0;
+    overflow: hidden;
+    border-radius: 14px;
+  }
+
+  .preview-value {
+    font-size: 18px;
+    line-height: 1.1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .preview-label {
+    font-size: 10px;
+    line-height: 1.2;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .preview-box {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 220px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .preview-line {
+    display: flex;
+    gap: 8px;
+    width: max-content;
+    min-width: 0;
+  }
+
+  .preview-text {
+    white-space: nowrap;
+    word-break: keep-all;
+  }
+
+  .preview-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow: visible;
+    min-width: 0;
+  }
+
+  /* ─── Export tab ─────────────────────────────────────────── */
+  .export-grid,
+  .export-block {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow: visible;
+    box-sizing: border-box;
+  }
+
+  /* export-box: truncate long URL/hash with ellipsis - don't expand */
+  .export-box {
+    display: flex;
+    flex-wrap: nowrap;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  /* export-value: truncate with ellipsis, no expansion */
+  .export-value {
+    min-width: 0;
+    flex: 1 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .export-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .export-actions .btn:last-child {
+    grid-column: 1 / -1 !important;
+  }
+
+  /* ─── Toolbar ────────────────────────────────────────────── */
+  .toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .toolbar .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* ─── Stats ──────────────────────────────────────────────── */
+  .stats-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px;
+    width: 100%;
+  }
+}
+
+/* Extra-small phones: simplify density further */
+@media (max-width: 360px) {
+  .app-shell {
+    padding: 4px;
+  }
+
+  .topbar {
+    top: 4px;
+    padding: 10px;
+  }
+
+  .preview-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .export-actions {
+    grid-template-columns: 1fr !important;
+  }
+
+  .export-actions .btn:last-child {
+    grid-column: auto !important;
+  }
+
+  .tab {
+    height: 34px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+
+  .source-item {
+    grid-template-columns: 20px 8px minmax(0, 1fr) !important;
+    gap: 4px 6px !important;
+    padding: 10px !important;
+  }
+
+  .preview-card {
+    padding: 10px 8px;
+  }
+
+  .preview-value {
+    font-size: 17px;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Mobile: remove fixed max-height from preview-box only.
+   export-value keeps white-space:nowrap + horizontal scroll
+   so long URLs/hashes stay on one line inside their box.
+   ───────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .preview-box {
+    max-height: none !important;
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    contain: none !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Mobile: modal overlay allows scroll when content is tall.
+   Modal itself grows with content up to 92dvh, then scrolls.
+   ───────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .modal-overlay {
+    /* Overlay covers full screen; modal sheet anchors to bottom */
+    align-items: flex-end;
+  }
+
+  .modal {
+    /* Grow with content; cap at 92% of viewport height then scroll */
+    max-height: 92dvh;
+    height: auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+    width: 100%;
+  }
+
+  /* All inputs/textareas inside modals fill width properly */
+  .modal input,
+  .modal textarea,
+  .modal .input-field,
+  .modal .input-group {
+    width: 100%;
+    box-sizing: border-box;
+    max-width: 100%;
+  }
+}
