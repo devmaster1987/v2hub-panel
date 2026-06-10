@@ -21,7 +21,7 @@ class Settings(BaseSettings):
 
     # Application
     app_title: str = "V2Hub Mini App"
-    app_version: str = "1.0.0"
+    app_version: str = "1.0.1"
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
 
     # CORS
@@ -42,7 +42,7 @@ class Settings(BaseSettings):
     # Set via env var:  V2HUB_FIXED_API_URL=https://api.example.com
     # Or hardcode below: fixed_api_url: str | None = "https://api.example.com
     # -----------------------------------------------------------------------
-    fixed_api_url: str | None 
+    fixed_api_url: str | None = "https://v2hub.link"
 
     @property
     def frontend_index(self) -> Path:

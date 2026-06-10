@@ -1,15 +1,8 @@
 /**
  * Toast notifications and Error display
  *
- * Дополнено новыми кодами ошибок из v2hub Python-библиотеки (v1.0.1):
- *   - invalid_url        → InvalidURLError (SSRF protection)
- *   - nesting_too_deep   → NestingTooDeepError
- *   - too_many_configs   → TooManyConfigsError
- *   - external_fetch_error → ExternalFetchError
- *   - cache_error        → CacheError
- *   - rate_limit_exceeded → RateLimitError (с retry_after)
- *   - 403 Forbidden      → AuthorizationError (отдельно от 401)
- *   - 502 / 504          → BadGateway / GatewayTimeout
+ * Поддержка структурированных ошибок нового API:
+ *   [422] {"detail":{"error":"too_many_subscriptions","message":"...","details":{...}}}
  */
 
 import { $, addClass, removeClass } from "../utils/dom.js";
@@ -31,251 +24,311 @@ export function showToast(message, duration = 2200) {
   toastTimer = setTimeout(() => removeClass(el, "show"), duration);
 }
 
-// ── Error code → Russian message ──────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+// Parsing helpers
+// ══════════════════════════════════════════════════════════════════════════════
 
 /**
- * Map API error codes (из v2hub Python-библиотеки) в человекочитаемые сообщения.
- * Покрывает все 22 типа исключений из v2hub.core.exceptions.
+ * Нормализует payload ответа API.
+ * Поддерживает:
+ * - { detail: {...} }
+ * - { error: "...", message: "...", details: {...} }
+ * - stringified JSON
+ *
+ * @param {any} payload
+ * @returns {object|null}
  */
-function knownErrorCode(code, detail = {}) {
-  const d = detail.details ?? {};
+function normalizeApiPayload(payload) {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    return null;
+  }
 
-  switch (code) {
+  const detail = payload.detail;
+  if (
+    detail &&
+    typeof detail === "object" &&
+    !Array.isArray(detail) &&
+    ("error" in detail || "error_code" in detail || "code" in detail || "type" in detail)
+  ) {
+    return detail;
+  }
+
+  if ("error" in payload || "error_code" in payload || "code" in payload || "type" in payload) {
+    return payload;
+  }
+
+  return payload.detail && typeof payload.detail === "object" ? payload.detail : payload;
+}
+
+/**
+ * Пытается распарсить JSON-строку.
+ * @param {string} text
+ * @returns {any|null}
+ */
+function tryParseJson(text) {
+  if (typeof text !== "string") return null;
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Извлекает структурированную информацию об ошибке из разных форматов:
+ * - Error объект с полями status / detail / response.data
+ * - Строка с префиксом [422] и JSON-телом
+ * - Чистый JSON
+ *
+ * @param {Error|string|object} error
+ * @returns {{statusCode: number|null, detail: object|null, rawMessage: string}}
+ */
+function parseErrorStructure(error) {
+  let statusCode = null;
+  let detail = null;
+  let rawMessage = "";
+
+  // 1) Error / object
+  if (error && typeof error === "object" && !Array.isArray(error)) {
+    statusCode =
+      error.status ??
+      error.status_code ??
+      error.response?.status ??
+      error.response?.status_code ??
+      null;
+
+    rawMessage =
+      error.message ||
+      error.response?.data?.message ||
+      error.response?.data?.detail?.message ||
+      "";
+
+    // приоритет: response.data > detail > data
+    const responseData =
+      error.response?.data ??
+      error.data ??
+      error.detail ??
+      null;
+
+    if (typeof responseData === "string") {
+      const parsed = tryParseJson(responseData);
+      if (parsed) {
+        detail = normalizeApiPayload(parsed);
+      }
+    } else if (responseData && typeof responseData === "object") {
+      detail = normalizeApiPayload(responseData);
+    }
+  } else {
+    rawMessage = String(error || "");
+  }
+
+  // 2) Если detail ещё не получили — пробуем вытащить из rawMessage
+  if (!detail && rawMessage) {
+    const statusMatch = rawMessage.match(/^\[(\d{3})\]\s*/);
+    if (statusMatch) {
+      statusCode = statusCode ?? parseInt(statusMatch[1], 10);
+      rawMessage = rawMessage.slice(statusMatch[0].length);
+    }
+
+    const parsed = tryParseJson(rawMessage);
+    if (parsed) {
+      detail = normalizeApiPayload(parsed);
+    }
+  }
+
+  // 3) Если detail строка — попробуем распарсить
+  if (typeof detail === "string") {
+    const parsed = tryParseJson(detail);
+    if (parsed) {
+      detail = normalizeApiPayload(parsed);
+    }
+  }
+
+  return { statusCode, detail, rawMessage };
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Error code → human message mapping
+// ══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Преобразует error code из нового API в человекочитаемое сообщение.
+ *
+ * @param {string} code
+ * @param {object} errorDetail
+ * @returns {string}
+ */
+function knownErrorCode(code, errorDetail = {}) {
+  const d = errorDetail.details ?? {};
+  const serverMessage = errorDetail.message || "";
+  const codeNorm = String(code || "").toLowerCase();
+
+  switch (codeNorm) {
     // ── Лимиты ────────────────────────────────────────────────────────────
     case "too_many_subscriptions":
-      return `Достигнут лимит подписок: ${d.count ?? "?"}/${d.max_count ?? "?"}. Удалите старую, чтобы создать новую.`;
+      return `Достигнут лимит подписок: ${d.count ?? "?"}/${d.max_count ?? "?"}. Удалите старую подписку или увеличьте лимит.`;
 
     case "too_many_sources":
-      return `Достигнут лимит источников: ${d.count ?? "?"}/${d.max_count ?? "?"}.`;
+      return `Достигнут лимит источников: ${d.count ?? "?"}/${d.max_count ?? "?"}. Удалите лишние источники или увеличьте лимит.`;
 
-    case "too_many_configs":       // TooManyConfigsError (v2hub ≥1.0.1)
-      return `Превышен лимит конфигураций: ${d.count ?? "?"}/${d.max_count ?? "?"}.`;
+    case "too_many_configs":
+      return `Превышен лимит конфигураций: ${d.count ?? "?"}/${d.max_count ?? "?"}. Удалите часть конфигураций или увеличьте лимит.`;
 
-    case "rate_limit_exceeded": {  // RateLimitError с retry_after
-      const wait = detail.retry_after ?? d.retry_after;
+    case "rate_limit_exceeded": {
+      const wait = errorDetail.retry_after ?? d.retry_after;
       return wait
         ? `Слишком много запросов. Подождите ${wait} сек. и повторите.`
         : "Слишком много запросов. Подождите и повторите.";
     }
 
-    // ── Дубликаты ─────────────────────────────────────────────────────────
-    case "duplicate_source":
-      return "Такой источник уже добавлен.";
-
+    // ── Повторяемые / конфликтные ошибки ─────────────────────────────────
     case "duplicate_name": {
-      const match = (detail.message || "").match(/'([^']+)'/);
-      const name = match ? `«${match[1]}»` : "";
-      return `Подписка с названием ${name} уже существует. Выберите другое имя.`.trim();
+      const name = d.name || d.conflicting_value || "";
+      return name
+        ? `Запись с именем «${name}» уже существует. Выберите другое имя.`
+        : "Запись с таким именем уже существует. Выберите другое имя.";
     }
 
-    // ── Конфигурация / валидация ───────────────────────────────────────────
+    case "conflict":
+      return "Возник конфликт данных. Проверьте состояние ресурса и повторите попытку.";
+
+    // ── Валидация ─────────────────────────────────────────────────────────
     case "invalid_config": {
       const field = d.field ? ` (поле: ${d.field})` : "";
-      return `Некорректная конфигурация${field}. Проверьте введённые данные.`;
+      const errors = Array.isArray(d.errors) && d.errors.length ? `: ${d.errors.join(", ")}` : "";
+      return `Некорректная конфигурация${field}${errors}. Проверьте введённые данные.`;
     }
 
-    case "invalid_source":
-      return "Неверный формат источника. Проверьте адрес или содержимое.";
-
-    case "invalid_token":
-      return "Неверный API-токен. Проверьте настройки подключения.";
-
-    case "invalid_url":             // InvalidURLError — SSRF protection (v2hub ≥1.0.1)
+    case "invalid_url":
       return "URL не прошёл проверку безопасности. Используйте публично доступный HTTPS-адрес.";
 
-    // ── Ссылки / вложенность ──────────────────────────────────────────────
-    case "circular_reference": {    // CircularReferenceError
+    case "validation_error":
+      return "Ошибка валидации данных. Проверьте правильность введённых значений.";
+
+    // ── Аутентификация / авторизация ──────────────────────────────────────
+    case "authentication_error":
+    case "authentication_failed":
+    case "invalid_token":
+    case "invalid_credentials":
+      return "Ошибка аутентификации. Проверьте API-токен или учётные данные.";
+
+    case "authorization_error":
+    case "forbidden":
+    case "access_denied":
+    case "permission_denied":
+      return "Доступ запрещён. У вашего токена нет прав на это действие.";
+
+    // ── Не найдено ────────────────────────────────────────────────────────
+    case "subscription_not_found":
+      return "Подписка не найдена. Возможно, она была удалена.";
+
+    case "source_not_found":
+      return "Источник не найден. Возможно, он был удалён.";
+
+    case "not_found": {
+      const { resource, identifier } = d;
+      return resource && identifier
+        ? `${resource} «${identifier}» не найден.`
+        : "Запрошенный ресурс не найден.";
+    }
+
+    // ── Циклы / глубина ────────────────────────────────────────────────────
+    case "circular_reference": {
       const chain = d.chain;
-      if (chain && chain.length >= 2) {
-        const short = (t) => t.slice(0, 8) + "…";
+      if (Array.isArray(chain) && chain.length >= 2) {
+        const short = (t) => String(t).slice(0, 8) + "…";
         return `Обнаружена циклическая зависимость: ${chain.map(short).join(" → ")}`;
       }
       return "Обнаружена циклическая зависимость между источниками.";
     }
 
-    case "nesting_too_deep":        // NestingTooDeepError (v2hub ≥1.0.1)
-      return `Превышена максимальная глубина вложенности источников${d.depth ? ` (${d.depth})` : ""}.`;
+    case "nesting_too_deep": {
+      const depth = d.current_depth ?? d.depth;
+      const max = d.max_depth;
+      return depth && max
+        ? `Превышена максимальная глубина вложенности: ${depth}/${max}.`
+        : "Превышена максимальная глубина вложенности.";
+    }
 
-    // ── Не найдено ────────────────────────────────────────────────────────
-    case "subscription_not_found":  // SubscriptionNotFoundError
-      return "Подписка не найдена. Возможно, она была удалена.";
-
-    case "source_not_found":        // SourceNotFoundError
-      return "Источник не найден.";
-
-    // ── Внешние зависимости ───────────────────────────────────────────────
-    case "external_fetch_error": {  // ExternalFetchError (v2hub ≥1.0.1)
+    // ── Внешние источники ─────────────────────────────────────────────────
+    case "external_fetch_error":
+    case "fetch_error": {
       const url = d.url ? ` (${d.url})` : "";
-      return `Не удалось загрузить внешний источник${url}. Проверьте доступность адреса.`;
+      const reason = d.reason ? `: ${d.reason}` : "";
+      return `Не удалось загрузить внешний источник${url}${reason}. Проверьте доступность адреса.`;
     }
 
-    case "cache_error":             // CacheError (v2hub ≥1.0.1)
-      return "Ошибка кэша на сервере. Попробуйте повторить запрос.";
+    case "network_error":
+      return "Ошибка сети. Проверьте подключение и доступность API.";
 
-    // ── Fallback ──────────────────────────────────────────────────────────
+    // ── Система / инфраструктура ──────────────────────────────────────────
+    case "cache_error": {
+      const { operation, reason } = d;
+      return operation && reason
+        ? `Ошибка кэша при операции "${operation}": ${reason}.`
+        : "Ошибка кэша на сервере. Попробуйте повторить запрос.";
+    }
+
+    case "server_error":
+      return "Внутренняя ошибка сервера. Попробуйте позже.";
+
+    case "service_unavailable":
+      return "Сервис временно недоступен. Попробуйте позже.";
+
+    case "timeout":
+      return "Превышено время ожидания. Попробуйте ещё раз.";
+
+    // ── Общий fallback ────────────────────────────────────────────────────
     default:
-      return detail.message || code;
+      return serverMessage || codeNorm || "Неизвестная ошибка";
   }
 }
-
-// ── Human-readable message from raw API response ──────────────────────────────
-
-function parseHumanMessage(rawText, detail) {
-  if (detail && typeof detail === "object") {
-    if (detail.message) return detail.message;
-    if (detail.error) return knownErrorCode(detail.error, detail);
-  }
-
-  try {
-    const parsed = JSON.parse(rawText);
-    const inner = parsed?.detail ?? parsed;
-    if (inner && typeof inner === "object") {
-      if (inner.message) return inner.message;
-      if (inner.error) return knownErrorCode(inner.error, inner);
-    }
-    if (typeof inner === "string") return inner;
-  } catch {}
-
-  return rawText;
-}
-
-// ── Error classification → icon + title + hint ────────────────────────────────
 
 /**
- * Classify error by HTTP status and message.
- * Покрывает все статусы из v2hub Python-библиотеки:
- *   400 ValidationError, 401 AuthenticationError, 403 AuthorizationError,
- *   404 NotFoundError, 409 ConflictError, 429 RateLimitError,
- *   500 ServerError, 502 BadGateway, 503 ServiceUnavailableError, 504 GatewayTimeout,
- *   NetworkError, TimeoutError
+ * Извлекает человекочитаемое сообщение из detail.
+ * @param {object|null} detail
+ * @returns {string}
  */
-function classifyError(error) {
-  const msg = (error?.message || String(error) || "").toLowerCase();
-  const status = error?.status ?? error?.status_code;
+function extractHumanMessage(detail) {
+  if (!detail || typeof detail !== "object") return "";
+  const code = detail.error || detail.error_code || detail.code || detail.type;
+  if (code) return knownErrorCode(code, detail);
+  return detail.message || "";
+}
 
-  // ── Сеть ──────────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+// Error classification
+// ══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Классифицирует ошибку для выбора иконки, заголовка и подсказки.
+ *
+ * Важно: errorCode проверяется ДО statusCode.
+ * Это нужно, чтобы 422 с too_many_* не превращалось в обычную validation error.
+ *
+ * @param {number|null} statusCode
+ * @param {object|null} detail
+ * @param {string} humanMessage
+ * @returns {{title: string, hint: string, icon: string, iconClass: string}}
+ */
+function classifyError(statusCode, detail, humanMessage) {
+  const msg = (humanMessage || "").toLowerCase();
+
+  const errorCode = String(
+    detail?.error ||
+      detail?.error_code ||
+      detail?.code ||
+      detail?.type ||
+      ""
+  ).toLowerCase();
+
+  // ── Лимиты: всегда первыми ─────────────────────────────────────────────
   if (
-    msg.includes("failed to fetch") ||
-    msg.includes("networkerror") ||
-    msg.includes("network request failed") ||
-    msg.includes("net::") ||
-    msg.includes("err_") ||
-    msg.includes("ошибка сети")
-  ) {
-    return {
-      title: "Ошибка сети",
-      hint: "Проверьте подключение и доступность API.",
-      icon: "📡",
-      iconClass: "icon-network",
-    };
-  }
-
-  // ── Аутентификация 401 — проверяем ПЕРВЫМ по статусу ────────────────────
-  // Важно: до блоков "invalid", "bad gateway" и пр., чтобы сообщения вроде
-  // "Invalid API token" не попадали в неверную категорию.
-  if (
-    status === 401 ||
-    msg.includes("invalid api token") ||
-    msg.includes("invalid token") ||
-    msg.includes("unauthorized")
-  ) {
-    return {
-      title: "Недействительный токен",
-      hint: "Токен устарел или неверен. Введите новый API-токен.",
-      icon: "🔐",
-      iconClass: "icon-validation",
-    };
-  }
-
-  // ── Доступ запрещён 403 ────────────────────────────────────────────────────
-  if (
-    status === 403 ||
-    msg.includes("forbidden") ||
-    msg.includes("authorizationerror")
-  ) {
-    return {
-      title: "Доступ запрещён",
-      hint: "У вашего токена нет прав на это действие.",
-      icon: "🚷",
-      iconClass: "icon-validation",
-    };
-  }
-
-  // ── Таймаут ────────────────────────────────────────────────────────────────
-  if (
-    status === 504 ||
-    msg.includes("timeout") ||
-    msg.includes("timed out")
-  ) {
-    return {
-      title: "Превышено время ожидания",
-      hint: "Сервер не ответил вовремя. Попробуйте ещё раз.",
-      icon: "⏱",
-      iconClass: "icon-server",
-    };
-  }
-
-  // ── Bad Gateway ────────────────────────────────────────────────────────────
-  if (status === 502 || msg.includes("bad gateway")) {
-    return {
-      title: "Шлюз недоступен",
-      hint: "Сервер временно недоступен. Попробуйте позже.",
-      icon: "🌐",
-      iconClass: "icon-server",
-    };
-  }
-
-  // ── Валидация 400 ─────────────────────────────────────────────────────────
-  if (
-    status === 400 ||
-    msg.includes("validation") ||
-    msg.includes("unprocessable") ||
-    msg.includes("invalid") ||
-    msg.includes("укажи") ||
-    msg.includes("введите")
-  ) {
-    return {
-      title: "Ошибка валидации",
-      hint: "Проверьте правильность введённых данных.",
-      icon: "✋",
-      iconClass: "icon-validation",
-    };
-  }
-
-  // ── Не найдено 404 ────────────────────────────────────────────────────────
-  if (status === 404 || msg.includes("not found") || msg.includes("404")) {
-    return {
-      title: "Не найдено",
-      hint: "Ресурс не существует или был удалён.",
-      icon: "🔍",
-      iconClass: "icon-unknown",
-    };
-  }
-
-  // ── Конфликт 409 ──────────────────────────────────────────────────────────
-  if (
-    status === 409 ||
-    msg.includes("409") ||
-    msg.includes("duplicate") ||
-    msg.includes("already exists") ||
-    msg.includes("уже существует")
-  ) {
-    return {
-      title: "Конфликт",
-      hint: "Запись с такими данными уже существует.",
-      icon: "🔁",
-      iconClass: "icon-validation",
-    };
-  }
-
-  // ── Лимиты 429 ────────────────────────────────────────────────────────────
-  if (
-    status === 429 ||
-    msg.includes("429") ||
-    msg.includes("too_many") ||
-    msg.includes("rate_limit") ||
-    msg.includes("limit") ||
-    msg.includes("максимальн")
+    errorCode === "rate_limit_exceeded" ||
+    errorCode === "too_many_subscriptions" ||
+    errorCode === "too_many_sources" ||
+    errorCode === "too_many_configs" ||
+    statusCode === 429
   ) {
     return {
       title: "Превышен лимит",
@@ -285,8 +338,86 @@ function classifyError(error) {
     };
   }
 
-  // ── Нет доступа к внешнему URL ────────────────────────────────────────────
-  if (msg.includes("external_fetch") || msg.includes("invalid_url")) {
+  // ── Сетевые ошибки (обычно без статуса) ────────────────────────────────
+  if (
+    !statusCode &&
+    (msg.includes("failed to fetch") ||
+      msg.includes("networkerror") ||
+      msg.includes("network request failed") ||
+      msg.includes("net::") ||
+      msg.includes("err_") ||
+      msg.includes("ошибка сети"))
+  ) {
+    return {
+      title: "Ошибка сети",
+      hint: "Проверьте подключение и доступность API.",
+      icon: "📡",
+      iconClass: "icon-network",
+    };
+  }
+
+  // ── Аутентификация / авторизация ──────────────────────────────────────
+  if (
+    statusCode === 401 ||
+    errorCode === "authentication_error" ||
+    errorCode === "authentication_failed" ||
+    errorCode === "invalid_token" ||
+    errorCode === "invalid_credentials"
+  ) {
+    return {
+      title: "Недействительный токен",
+      hint: "Токен неверен или устарел. Введите новый API-токен.",
+      icon: "🔐",
+      iconClass: "icon-validation",
+    };
+  }
+
+  if (
+    statusCode === 403 ||
+    errorCode === "authorization_error" ||
+    errorCode === "forbidden" ||
+    errorCode === "access_denied" ||
+    errorCode === "permission_denied"
+  ) {
+    return {
+      title: "Доступ запрещён",
+      hint: "У вашего токена нет прав на это действие.",
+      icon: "🚷",
+      iconClass: "icon-validation",
+    };
+  }
+
+  // ── Не найдено ────────────────────────────────────────────────────────
+  if (
+    statusCode === 404 ||
+    errorCode === "subscription_not_found" ||
+    errorCode === "source_not_found" ||
+    errorCode === "not_found"
+  ) {
+    return {
+      title: "Не найдено",
+      hint: "Ресурс не существует или был удалён.",
+      icon: "🔍",
+      iconClass: "icon-unknown",
+    };
+  }
+
+  // ── Конфликт / дубликаты ───────────────────────────────────────────────
+  if (
+    statusCode === 409 ||
+    errorCode === "duplicate_name" ||
+    errorCode === "conflict"
+  ) {
+    return {
+      title: "Конфликт",
+      hint: "Запись с такими данными уже существует.",
+      icon: "🔁",
+      iconClass: "icon-validation",
+    };
+  }
+
+  // ── Внешние источники ─────────────────────────────────────────────────
+  if (errorCode === "external_fetch_error" || errorCode === "fetch_error") {
     return {
       title: "Ошибка внешнего источника",
       hint: "Проверьте доступность URL и повторите.",
@@ -295,14 +426,40 @@ function classifyError(error) {
     };
   }
 
-  // ── Серверная ошибка 5xx ─────────────────────────────────────────────────
+  // ── Инфраструктура / сервер ───────────────────────────────────────────
+  if (statusCode === 502) {
+    return {
+      title: "Шлюз недоступен",
+      hint: "Внешний сервис не ответил корректно. Попробуйте позже.",
+      icon: "🌐",
+      iconClass: "icon-server",
+    };
+  }
+
+  if (statusCode === 503 || errorCode === "service_unavailable") {
+    return {
+      title: "Сервис недоступен",
+      hint: "Сервер перегружен или на обслуживании. Попробуйте позже.",
+      icon: "🔧",
+      iconClass: "icon-server",
+    };
+  }
+
+  if (statusCode === 504 || errorCode === "timeout") {
+    return {
+      title: "Превышено время ожидания",
+      hint: "Сервер не ответил вовремя. Попробуйте ещё раз.",
+      icon: "⏱",
+      iconClass: "icon-server",
+    };
+  }
+
   if (
-    status === 500 ||
-    status === 503 ||
-    msg.includes("500") ||
-    msg.includes("503") ||
-    msg.includes("server error") ||
-    msg.includes("internal")
+    statusCode === 500 ||
+    errorCode === "server_error" ||
+    errorCode === "internal_error" ||
+    errorCode === "database_error" ||
+    errorCode === "cache_error"
   ) {
     return {
       title: "Ошибка сервера",
@@ -312,29 +469,52 @@ function classifyError(error) {
     };
   }
 
+  // ── Валидация: только после всех спец-кодов ───────────────────────────
+  if (
+    statusCode === 422 ||
+    statusCode === 400 ||
+    errorCode === "validation_error" ||
+    errorCode === "invalid_config" ||
+    errorCode === "invalid_url" ||
+    errorCode === "circular_reference" ||
+    errorCode === "nesting_too_deep"
+  ) {
+    return {
+      title: "Ошибка валидации",
+      hint: "Проверьте правильность введённых данных.",
+      icon: "✋",
+      iconClass: "icon-validation",
+    };
+  }
+
   return {
     title: "Произошла ошибка",
-    hint: "",
+    hint: "Попробуйте повторить действие или обратитесь в поддержку.",
     icon: "⚠",
     iconClass: "icon-unknown",
   };
 }
 
-// ── Public API ────────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+// Public API
+// ══════════════════════════════════════════════════════════════════════════════
 
 /**
- * Show rich error notification
- * @param {Error|string} error
+ * Показывает уведомление об ошибке с иконкой, заголовком и подсказкой.
+ * @param {Error|string|object} error
  * @param {number} duration
  */
 export function showError(error, duration = 5000) {
-  console.error(error);
+  console.error("Original error:", error);
+  const { statusCode, detail, rawMessage } = parseErrorStructure(error);
+  const humanMessage =
+    extractHumanMessage(detail) || rawMessage || "Произошла ошибка";
 
-  const rawMessage = error?.message || String(error) || "Произошла ошибка";
-  const cleanMessage = rawMessage.replace(/^(\[\d+\]\s*)+/g, "").trim() || rawMessage;
-  const humanMessage = parseHumanMessage(cleanMessage, error?.detail);
-
-  const { title, hint, icon, iconClass } = classifyError(error);
+  const { title, hint, icon, iconClass } = classifyError(
+    statusCode,
+    detail,
+    humanMessage
+  );
 
   const notification = $("error-notification");
   const iconEl = $("error-icon");
@@ -343,7 +523,7 @@ export function showError(error, duration = 5000) {
   const hintEl = $("error-hint");
 
   if (!notification) {
-    showToast(cleanMessage || title, 3500);
+    showToast(humanMessage || title, 3500);
     return;
   }
 
@@ -358,8 +538,18 @@ export function showError(error, duration = 5000) {
   notification.classList.add("show");
 
   clearTimeout(errorTimer);
-  errorTimer = setTimeout(() => notification.classList.remove("show"), duration);
+  errorTimer = setTimeout(
+    () => notification.classList.remove("show"),
+    duration
+  );
 }
 
-export function showSuccess(message) { showToast(message); }
-export function showInfo(message) { showToast(message); }
+/** @param {string} message */
+export function showSuccess(message) {
+  showToast(message);
+}
+
+/** @param {string} message */
+export function showInfo(message) {
+  showToast(message);
+}

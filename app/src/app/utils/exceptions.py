@@ -7,57 +7,57 @@ from typing import Any, Awaitable, Callable, TypeVar
 
 from fastapi import HTTPException
 
-from v2hub import (
-    AuthenticationError,
-    ConflictError,
-    NotFoundError,
-    RateLimitError,
-    ServiceUnavailableError,
-    ValidationError,
-    VPNAPIError,
-)
+from v2hub import VPNAPIError
+
+from app.models.responses import ErrorDetail
 
 log = logging.getLogger(__name__)
 
 T = TypeVar("T")
 
 
+def _extract_from_vpn_error(
+    exc: VPNAPIError,
+) -> tuple[int | None, ErrorDetail]:
+    status_code = exc.status_code
+
+    try:
+        detail = ErrorDetail(
+            **exc.response_data.get("detail", {})
+        )
+    except Exception:
+        detail = ErrorDetail(
+            error="unknown_error",
+            message=exc.message,
+        )
+
+    return status_code, detail
+
+
 def map_vpn_exception(exc: Exception) -> HTTPException:
     """
-    Map VPN client exceptions to HTTP exceptions.
-
-    Args:
-        exc: The exception to map
-
-    Returns:
-        HTTPException with appropriate status code and detail
+    Convert domain/API exceptions into clean FastAPI HTTPException.
     """
+
     if isinstance(exc, HTTPException):
         return exc
 
-    if isinstance(exc, AuthenticationError):
-        return HTTPException(status_code=401, detail=str(exc))
-
-    if isinstance(exc, NotFoundError):
-        return HTTPException(status_code=404, detail=str(exc))
-
-    if isinstance(exc, ConflictError):
-        return HTTPException(status_code=409, detail=str(exc))
-
-    if isinstance(exc, ValidationError):
-        return HTTPException(status_code=422, detail=str(exc))
-
-    if isinstance(exc, RateLimitError):
-        return HTTPException(status_code=429, detail=str(exc))
-
-    if isinstance(exc, ServiceUnavailableError):
-        return HTTPException(status_code=503, detail=str(exc))
-
     if isinstance(exc, VPNAPIError):
-        return HTTPException(status_code=502, detail=str(exc))
+        status_code, detail = _extract_from_vpn_error(exc)
 
-    log.exception("Unexpected error: %s", exc)
-    return HTTPException(status_code=500, detail=f"Unexpected error: {exc}")
+        if isinstance(status_code, int):
+            return HTTPException(status_code=status_code, detail=detail)
+
+        return HTTPException(status_code=502, detail=detail)
+
+    log.exception("Unexpected error: %s", exc.__str__)
+    return HTTPException(
+        status_code=500,
+        detail={
+            "error": "internal_error",
+            "message": str(exc),
+        },
+    )
 
 
 async def with_error_mapping(
@@ -67,5 +67,6 @@ async def with_error_mapping(
 ) -> T:
     try:
         return await fn(*args, **kwargs)
+
     except Exception as exc:
         raise map_vpn_exception(exc) from exc

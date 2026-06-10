@@ -10,6 +10,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
+from app.models.responses import ErrorDetail
+
 from .config import settings
 from .models import ErrorResponse
 from .routes import connection, public, subscriptions
@@ -78,5 +80,5 @@ def unhandled_exception_handler(_: Request, exc: Exception) -> JSONResponse:
     log.exception("Unhandled error: %s", exc)
     return JSONResponse(
         status_code=500,
-        content=ErrorResponse(detail="Internal server error").model_dump(),
+        content=ErrorResponse(detail=ErrorDetail(error="internal_error", message="Internal server error")).model_dump(),
     )

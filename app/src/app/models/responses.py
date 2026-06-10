@@ -1,6 +1,6 @@
 """Response models for API endpoints."""
-
 from __future__ import annotations
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -53,6 +53,25 @@ class OkResponse(BaseModel):
     message: str | None = None
 
 
+class ErrorDetail(BaseModel):
+    """Structured error payload returned inside every error response.
+ 
+    Mirrors the shape produced by v2hub VPNAPIError.response_data:
+        {
+            "error":   "too_many_subscriptions",
+            "message": "Subscription count (3) exceeds maximum allowed (3)",
+            "details": {"count": 3, "max_count": 3}   # optional, code-specific
+        }
+    """
+ 
+    error: str
+    message: str
+    details: dict[str, Any] | None = None
+    retry_after: int | None = None  
+ 
+ 
 class ErrorResponse(BaseModel):
-    """Error response model."""
-    detail: str
+    """HTTP error envelope — FastAPI serialises HTTPException.detail into this."""
+ 
+    detail: ErrorDetail
+ 

@@ -355,10 +355,18 @@
   color: #fca5a5;
 }
 
-.error-notification-icon.icon-network { color: #fbbf24; }
-.error-notification-icon.icon-validation { color: #c4b5fd; }
-.error-notification-icon.icon-server { color: #fb7185; }
-.error-notification-icon.icon-unknown { color: var(--muted); }
+.error-notification-icon.icon-network {
+  color: #fbbf24;
+}
+.error-notification-icon.icon-validation {
+  color: #c4b5fd;
+}
+.error-notification-icon.icon-server {
+  color: #fb7185;
+}
+.error-notification-icon.icon-unknown {
+  color: var(--muted);
+}
 
 .error-notification-body {
   flex: 1;
@@ -403,7 +411,10 @@
   place-items: center;
   flex-shrink: 0;
   font-size: 11px;
-  transition: background var(--t), border-color var(--t), color var(--t);
+  transition:
+    background var(--t),
+    border-color var(--t),
+    color var(--t);
 }
 
 .error-notification-close:hover {

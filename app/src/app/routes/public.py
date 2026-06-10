@@ -5,9 +5,8 @@ from __future__ import annotations
 import io
 
 import qrcode
-from fastapi import APIRouter, Query, Request, Response
+from fastapi import APIRouter, Query, Response
 
-from ..config import settings
 from ..services.connection import make_public_client, resolve_base_url
 from ..services.subscription import serialize_public_subscription
 from ..utils import get_public_subscription_url, with_error_mapping
