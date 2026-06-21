@@ -4,3 +4,6 @@ pydantic>=2.7.0
 pydantic-settings>=2.3.0
 v2hub>=1.0.3
 qrcode[pil]>=8.0
+prometheus_client>=0.25.0
+opentelemetry-api>=1.42.1
+opentelemetry-sdk>=1.42.1
