@@ -3,12 +3,20 @@
 from __future__ import annotations
 
 import logging
+import re
+import time
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
+
+from prometheus_client import Counter, Gauge, Histogram, REGISTRY
+from prometheus_client.openmetrics.exposition import (
+    CONTENT_TYPE_LATEST,
+    generate_latest,
+)
 
 from app.models.responses import ErrorDetail
 
@@ -20,6 +28,87 @@ settings.configure_logging()
 log = logging.getLogger(__name__)
 
 
+# ═══════════════════════════════════════════════════════════════════════════
+# Prometheus metrics
+# ═══════════════════════════════════════════════════════════════════════════
+
+APP_NAME = "v2hub_app"
+
+APP_INFO = Gauge(
+    "fastapi_app_info",
+    "FastAPI application info",
+    ["app_name", "version"],
+)
+APP_INFO.labels(app_name=APP_NAME, version="1.0.0").set(1)
+
+HTTP_REQUESTS_TOTAL = Counter(
+    "fastapi_requests_total",
+    "Total HTTP requests",
+    ["method", "path", "app_name"],
+)
+
+HTTP_RESPONSES_TOTAL = Counter(
+    "fastapi_responses_total",
+    "Total HTTP responses by status code",
+    ["method", "path", "status_code", "app_name"],
+)
+
+HTTP_REQUEST_DURATION = Histogram(
+    "fastapi_requests_duration_seconds",
+    "HTTP request duration in seconds",
+    ["method", "path", "app_name"],
+    buckets=(0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10),
+)
+
+HTTP_REQUESTS_IN_PROGRESS = Gauge(
+    "fastapi_requests_in_progress",
+    "HTTP requests currently in progress",
+    ["method", "path", "app_name"],
+)
+
+HTTP_EXCEPTIONS_TOTAL = Counter(
+    "fastapi_exceptions_total",
+    "Total HTTP exceptions",
+    ["method", "path", "exception_type", "app_name"],
+)
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Path normalization
+# ═══════════════════════════════════════════════════════════════════════════
+
+PATH_PATTERNS = [
+    (re.compile(r"^/sub/[^/]+$"),                                  "/sub/{token}"),
+    (re.compile(r"^/api/subscriptions/[^/]+/qr\.png$"),           "/api/subscriptions/{token}/qr.png"),
+    (re.compile(r"^/api/subscriptions/[^/]+/sources/add$"),       "/api/subscriptions/{token}/sources/add"),
+    (re.compile(r"^/api/subscriptions/[^/]+/sources/replace$"),   "/api/subscriptions/{token}/sources/replace"),
+    (re.compile(r"^/api/subscriptions/[^/]+$"),                   "/api/subscriptions/{token}"),
+]
+
+IGNORED_PATHS = re.compile(
+    r"^(/wp-admin|/wp-login|/\.env|/\.git|/phpmyadmin|/admin\.php"
+    r"|/xmlrpc\.php|/cgi-bin|/actuator|/boaform|/shell"
+    r"|.*\.(php|asp|aspx|jsp|cgi|bak|sql|tar|gz)$)"
+)
+
+
+def normalize_path(path: str) -> str | None:
+    """
+    Нормализует путь для метрик.
+    Возвращает None если путь нужно игнорировать (боты, сканеры).
+    """
+    if IGNORED_PATHS.match(path):
+        return None
+    for pattern, replacement in PATH_PATTERNS:
+        if pattern.match(path):
+            return pattern.sub(replacement, path)
+    return path
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Application lifecycle
+# ═══════════════════════════════════════════════════════════════════════════
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     log.info("Starting %s v%s", settings.app_title, settings.app_version)
@@ -28,6 +117,10 @@ async def lifespan(app: FastAPI):
     log.info("Shutting down %s", settings.app_title)
 
 
+# ═══════════════════════════════════════════════════════════════════════════
+# Application instance
+# ═══════════════════════════════════════════════════════════════════════════
+
 app = FastAPI(
     title=settings.app_title,
     version=settings.app_version,
@@ -35,7 +128,6 @@ app = FastAPI(
     redoc_url=None,
     lifespan=lifespan,
 )
-
 
 app.add_middleware(
     CORSMiddleware,
@@ -57,6 +149,10 @@ if settings.frontend_dir.exists():
     )
 
 
+# ═══════════════════════════════════════════════════════════════════════════
+# Routes
+# ═══════════════════════════════════════════════════════════════════════════
+
 @app.get("/", response_class=HTMLResponse)
 def index() -> HTMLResponse:
     """Serve frontend index page."""
@@ -67,6 +163,18 @@ def index() -> HTMLResponse:
         )
     return HTMLResponse(settings.frontend_index.read_text(encoding="utf-8"))
 
+
+@app.get("/metrics")
+def metrics() -> Response:
+    return Response(
+        content=generate_latest(REGISTRY),
+        media_type=CONTENT_TYPE_LATEST,
+    )
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Exception handlers
+# ═══════════════════════════════════════════════════════════════════════════
 
 @app.exception_handler(HTTPException)
 def http_exception_handler(_: Request, exc: HTTPException) -> JSONResponse:
@@ -81,69 +189,15 @@ def unhandled_exception_handler(_: Request, exc: Exception) -> JSONResponse:
     log.exception("Unhandled error: %s", exc)
     return JSONResponse(
         status_code=500,
-        content=ErrorResponse(detail=ErrorDetail(error="internal_error", message="Internal server error")).model_dump(),
+        content=ErrorResponse(
+            detail=ErrorDetail(error="internal_error", message="Internal server error")
+        ).model_dump(),
     )
 
-from starlette.responses import Response
-from prometheus_client import (
-    Counter, Histogram, Gauge, Info, REGISTRY
-)
-from prometheus_client.openmetrics.exposition import (
-    generate_latest,
-    CONTENT_TYPE_LATEST,
-)
-import time
 
-APP_NAME = "v2hub_app"  # должно совпадать с именем контейнера (app-*)
-
-# ─── Метрики ────────────────────────────────────────────────────────────────
-
-# Инфо-метрика: нужна для переменной $app_name в дашборде
-APP_INFO = Info(
-    "fastapi_app",
-    "FastAPI application info",
-    ["app_name"],
-)
-APP_INFO.labels(app_name=APP_NAME).info({"version": "1.0.0"})
-
-# Счётчик запросов
-HTTP_REQUESTS_TOTAL = Counter(
-    "fastapi_requests_total",
-    "Total HTTP requests",
-    ["method", "path", "app_name"],
-)
-
-# Счётчик ответов (с status_code — для панелей 2xx/5xx)
-HTTP_RESPONSES_TOTAL = Counter(
-    "fastapi_responses_total",
-    "Total HTTP responses by status code",
-    ["method", "path", "status_code", "app_name"],
-)
-
-# Гистограмма длительности
-HTTP_REQUEST_DURATION = Histogram(
-    "fastapi_requests_duration_seconds",
-    "HTTP request duration in seconds",
-    ["method", "path", "app_name"],
-    buckets=(0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10),
-)
-
-# Текущие запросы в обработке
-HTTP_REQUESTS_IN_PROGRESS = Gauge(
-    "fastapi_requests_in_progress",
-    "HTTP requests currently in progress",
-    ["method", "path", "app_name"],
-)
-
-# Счётчик исключений
-HTTP_EXCEPTIONS_TOTAL = Counter(
-    "fastapi_exceptions_total",
-    "Total HTTP exceptions",
-    ["method", "path", "exception_type", "app_name"],
-)
-
-
-# ─── Middleware ──────────────────────────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════════════════
+# Prometheus middleware
+# ═══════════════════════════════════════════════════════════════════════════
 
 @app.middleware("http")
 async def prometheus_middleware(request: Request, call_next):
@@ -153,8 +207,14 @@ async def prometheus_middleware(request: Request, call_next):
     if path == "/metrics":
         return await call_next(request)
 
+    normalized = normalize_path(path)
+
+    # Мусорные пути от ботов — пропускаем без трекинга
+    if normalized is None:
+        return await call_next(request)
+
     HTTP_REQUESTS_IN_PROGRESS.labels(
-        method=method, path=path, app_name=APP_NAME
+        method=method, path=normalized, app_name=APP_NAME
     ).inc()
 
     start = time.perf_counter()
@@ -165,7 +225,7 @@ async def prometheus_middleware(request: Request, call_next):
     except Exception as e:
         HTTP_EXCEPTIONS_TOTAL.labels(
             method=method,
-            path=path,
+            path=normalized,
             exception_type=type(e).__name__,
             app_name=APP_NAME,
         ).inc()
@@ -174,32 +234,22 @@ async def prometheus_middleware(request: Request, call_next):
         duration = time.perf_counter() - start
 
         HTTP_REQUESTS_TOTAL.labels(
-            method=method, path=path, app_name=APP_NAME
+            method=method, path=normalized, app_name=APP_NAME
         ).inc()
 
         HTTP_RESPONSES_TOTAL.labels(
             method=method,
-            path=path,
+            path=normalized,
             status_code=str(status_code),
             app_name=APP_NAME,
         ).inc()
 
         HTTP_REQUEST_DURATION.labels(
-            method=method, path=path, app_name=APP_NAME
+            method=method, path=normalized, app_name=APP_NAME
         ).observe(duration)
 
         HTTP_REQUESTS_IN_PROGRESS.labels(
-            method=method, path=path, app_name=APP_NAME
+            method=method, path=normalized, app_name=APP_NAME
         ).dec()
 
     return response
-
-
-# ─── /metrics ────────────────────────────────────────────────────────────────
-
-@app.get("/metrics")
-def metrics():
-    return Response(
-        content=generate_latest(REGISTRY),
-        media_type=CONTENT_TYPE_LATEST,
-    )
