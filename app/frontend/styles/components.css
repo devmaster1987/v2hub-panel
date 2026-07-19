@@ -314,3 +314,30 @@
   border-color: rgba(74, 222, 128, 0.25);
   background: rgba(74, 222, 128, 0.08);
 }
+
+/* ===========================
+   Source visibility (eye) toggle
+   =========================== */
+
+/* Positioned between the type badge and the refresh/ctx action buttons */
+.mini-btn.eye-btn.is-hidden-on {
+  color: var(--warning);
+  border-color: rgba(251, 191, 36, 0.25);
+  background: rgba(251, 191, 36, 0.08);
+}
+
+.mini-btn.eye-btn.is-hidden-on:hover {
+  color: #fcd34d;
+  background: rgba(251, 191, 36, 0.14);
+}
+
+/* Dim the whole row a touch when a source is hidden from end users,
+   so it reads as "present but not shown" at a glance in the list. */
+.source-item.is-source-hidden {
+  opacity: 0.72;
+}
+
+.source-item.is-source-hidden .source-data {
+  color: var(--muted);
+}
+

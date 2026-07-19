@@ -39,7 +39,16 @@ export function splitLines(text) {
 }
 
 /**
- * Normalize source type from raw string
+ * Normalize source type from raw string.
+ *
+ * NOTE: this is a lenient FALLBACK used when parsing subscription data
+ * that came back from the server (see toSourceItem/normalizeSources
+ * below) — v2hub-core almost always sends an explicit source_type, this
+ * only kicks in if that field is somehow missing. It intentionally
+ * treats "anything that isn't a known config:// scheme or http(s)://" as
+ * internal_token, which is fine for displaying already-saved data but is
+ * NOT safe for validating fresh user input (use detectSourceType for that).
+ *
  * @param {string} raw - Raw source string
  * @returns {string} Source type
  */
@@ -60,6 +69,51 @@ export function normalizeType(raw) {
   return "internal_token";
 }
 
+const KNOWN_CONFIG_SCHEMES = ["vless://", "vmess://", "ss://", "trojan://", "socks://"];
+
+/**
+ * Strictly classify a piece of source data the USER is entering (add
+ * source / create subscription forms), rejecting anything that doesn't
+ * clearly match a known shape:
+ *
+ *   - a known proxy config scheme (vless://, vmess://, ss://, trojan://,
+ *     socks://)              -> "config"
+ *   - an http(s):// URL that starts with the current connection's
+ *     base_url                -> "internal_token" (it's a link back into
+ *                                 this same v2hub-core instance)
+ *   - any other http(s):// URL -> "external_url"
+ *   - anything else            -> null (unrecognized, reject it instead
+ *                                 of guessing "internal_token" for junk)
+ *
+ * @param {string} raw - Raw source string entered by the user
+ * @param {string} [baseUrl] - The active connection's base_url, used to
+ *   distinguish internal subscription links from arbitrary external URLs.
+ *   If omitted/empty, all http(s):// input is treated as external_url.
+ * @returns {"config"|"external_url"|"internal_token"|null}
+ */
+export function detectSourceType(raw, baseUrl) {
+  const s = (raw || "").trim();
+  if (!s) return null;
+
+  const lower = s.toLowerCase();
+
+  if (KNOWN_CONFIG_SCHEMES.some((scheme) => lower.startsWith(scheme))) {
+    return "config";
+  }
+
+  if (lower.startsWith("http://") || lower.startsWith("https://")) {
+    const normalizedBase = (baseUrl || "").trim().replace(/\/+$/, "").toLowerCase();
+    if (normalizedBase && lower.startsWith(normalizedBase)) {
+      return "internal_token";
+    }
+    return "external_url";
+  }
+
+  // Not a recognized config scheme and not an http(s) URL at all -- this
+  // is not a valid source, don't guess "internal_token" for it.
+  return null;
+}
+
 /**
  * Extract source value from entry
  * @param {*} entry - Source entry
@@ -69,6 +123,19 @@ export function sourceValue(entry) {
   if (entry == null) return "";
   if (typeof entry === "string") return entry;
   return entry.data || entry.value || entry.url || entry.source || "";
+}
+
+/**
+ * Clamp an arbitrary max_depth value to the valid [0, 3] range.
+ * Anything invalid/out-of-range falls back to the default (3), matching
+ * the backend's _clamp_depth() behavior.
+ * @param {*} value
+ * @returns {number}
+ */
+export function clampDepth(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return 3;
+  return Math.max(0, Math.min(3, Math.round(n)));
 }
 
 /**
@@ -85,6 +152,8 @@ export function toSourceItem(entry, idx) {
       source_type: normalizeType(entry),
       order_index: idx,
       comment: null,
+      is_hidden: false,
+      max_depth: 3,
     };
   }
 
@@ -96,6 +165,8 @@ export function toSourceItem(entry, idx) {
       ? Number(entry.order_index)
       : idx,
     comment: entry.comment ?? null,
+    is_hidden: Boolean(entry.is_hidden),
+    max_depth: clampDepth(entry.max_depth ?? 3),
   };
 }
 

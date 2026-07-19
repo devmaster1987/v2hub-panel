@@ -415,24 +415,24 @@
           ✕
         </button>
         <div class="modal-title">Добавить источник</div>
-        <div class="input-group">
-          <label class="input-label">Данные источника</label>
-          <textarea
-            class="input-field"
-            id="source-data-input"
-            placeholder="Вставьте конфиг или ссылку..."
-          ></textarea>
-          <div class="input-hint" id="source-hint">
-            Поддерживаются: vless://, vmess://, ss://, trojan:// и другие. Также
-            можно добавить другие подписки
-          </div>
+
+        <div class="source-row-list" id="add-source-rows"></div>
+
+        <button class="add-row-btn" type="button" onclick="addSourceRow()">
+          + Добавить ещё строку
+        </button>
+
+        <div class="input-hint" style="margin-top: 6px; margin-bottom: 14px">
+          Поддерживаются: vless://, vmess://, ss://, trojan:// и другие. Также
+          можно добавить другие подписки
         </div>
+
         <button
           class="btn btn-primary btn-full"
           type="button"
           onclick="addSource()"
         >
-          Добавить источник
+          Добавить источник<span id="add-source-count"></span>
         </button>
       </div>
     </div>
@@ -472,17 +472,19 @@
             autocomplete="off"
           />
         </div>
+
         <div class="input-group">
-          <label class="input-label"
-            >Начальные источники (по одному на строку)</label
+          <label class="input-label">Начальные источники</label>
+          <div class="source-row-list" id="create-source-rows"></div>
+          <button
+            class="add-row-btn"
+            type="button"
+            onclick="addCreateSourceRow()"
           >
-          <textarea
-            class="input-field"
-            id="create-sources"
-            rows="5"
-            placeholder="vless://...&#10;https://example.com/sub/q1w2e3r4t5y6u7i8o9p0"
-          ></textarea>
+            + Добавить ещё строку
+          </button>
         </div>
+
         <button
           class="btn btn-primary btn-full"
           type="button"
@@ -560,9 +562,11 @@
           ✕
         </button>
 
-        <div class="modal-title">Изменить комментарий</div>
+        <div class="modal-title" id="source-settings-title">
+          Редактировать конфиг
+        </div>
 
-        <div class="input-group">
+        <div class="input-group" id="source-comment-group">
           <label class="input-label">Комментарий</label>
 
           <input
@@ -574,7 +578,70 @@
             placeholder="Введите комментарий"
           />
 
-          <div class="input-hint">Отображается только в интерфейсе</div>
+          <div class="input-hint" id="source-comment-hint">
+            Отображается только в интерфейсе
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-row-text">
+            <div class="setting-row-title">Скрыт от пользователей</div>
+            <div class="setting-row-hint">
+              Источник останется в подписке, но не попадёт в резолв
+            </div>
+          </div>
+          <button
+            type="button"
+            class="toggle-switch"
+            id="edit-source-hidden-toggle"
+            role="switch"
+            aria-checked="false"
+            onclick="toggleSourceHiddenInModal()"
+          ></button>
+        </div>
+
+        <div
+          class="advanced-toggle"
+          id="source-advanced-toggle"
+          onclick="toggleSourceAdvanced()"
+        >
+          <span>Расширенные настройки</span>
+          <span class="advanced-toggle-chevron">▾</span>
+        </div>
+
+        <div class="advanced-body" id="source-advanced-body">
+          <div class="advanced-body-inner">
+            <div class="setting-row">
+              <div class="setting-row-text">
+                <div class="setting-row-title">Глубина вложенности</div>
+                <div class="setting-row-hint">
+                  На сколько уровней вверх по цепочке импорта будет доступен
+                  этот источник (0–3).
+                </div>
+              </div>
+              <div class="depth-stepper">
+                <button
+                  type="button"
+                  class="depth-stepper-btn"
+                  id="depth-stepper-minus"
+                  onclick="stepSourceDepth(-1)"
+                >
+                  −
+                </button>
+                <span class="depth-stepper-value" id="depth-stepper-value"
+                  >3</span
+                >
+                <button
+                  type="button"
+                  class="depth-stepper-btn"
+                  id="depth-stepper-plus"
+                  onclick="stepSourceDepth(1)"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
         <button
@@ -640,7 +707,7 @@
         id="ctx-edit-comment"
         onclick="editSourceCommentFromCtx()"
       >
-        ✏️ Изменить комментарий
+        ✏️ <span id="ctx-edit-comment-label">Редактировать конфиг</span>
       </div>
 
       <div class="ctx-menu-item" onclick="deleteSourceFromCtx()">
@@ -651,20 +718,29 @@
     <div class="editor-menu" id="editor-menu" style="min-width: 210px">
       <div
         class="editor-menu-item"
-        onclick="openEditSubModal();closeEditorMenu()"
+        onclick="
+          openEditSubModal();
+          closeEditorMenu();
+        "
       >
         ✎ Редактировать подписку
       </div>
       <div
         class="editor-menu-item"
-        onclick="reloadSelected();closeEditorMenu()"
+        onclick="
+          reloadSelected();
+          closeEditorMenu();
+        "
       >
         ↻ Обновить данные
       </div>
       <div class="editor-divider"></div>
       <div
         class="editor-menu-item danger"
-        onclick="deleteSubConfirm();closeEditorMenu()"
+        onclick="
+          deleteSubConfirm();
+          closeEditorMenu();
+        "
       >
         🗑 Удалить подписку
       </div>
@@ -690,7 +766,11 @@
         <button
           class="error-notification-close"
           type="button"
-          onclick="document.getElementById('error-notification').classList.remove('show')"
+          onclick="
+            document
+              .getElementById('error-notification')
+              .classList.remove('show')
+          "
           aria-label="Закрыть"
         >
           ✕

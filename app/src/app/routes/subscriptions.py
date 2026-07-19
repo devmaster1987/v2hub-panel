@@ -16,7 +16,7 @@ from ..models import (
 from ..models.responses import ConnectionInfo
 from ..services.connection import make_async_client
 from ..services.subscription import serialize_subscription
-from ..utils import clean_lines, with_error_mapping
+from ..utils import clean_source_entries, with_error_mapping
 
 router = APIRouter(prefix="/api/subscriptions", tags=["subscriptions"])
 
@@ -42,12 +42,14 @@ async def list_subscriptions(
 async def create_subscription(
     payload: SubscriptionCreateRequest,
 ) -> SubscriptionInfo:
+    sources = clean_source_entries([s.model_dump() for s in payload.sources])
+
     async with make_async_client(payload.base_url, payload.api_token) as client:
         subscription = await with_error_mapping(
             client.create_subscription,
             name=payload.name.strip(),
             description=payload.description.strip() if payload.description else None,
-            sources=clean_lines(payload.sources),
+            sources=sources,
         )
 
     return serialize_subscription(subscription, payload.base_url)
@@ -96,7 +98,7 @@ async def add_sources(
     token: str,
     payload: SourcesRequest,
 ) -> SubscriptionInfo:
-    sources = clean_lines(payload.sources)
+    sources = clean_source_entries([s.model_dump() for s in payload.sources])
     if not sources:
         raise HTTPException(status_code=422, detail="sources must not be empty")
 
@@ -111,7 +113,7 @@ async def replace_sources(
     token: str,
     payload: SourcesRequest,
 ) -> SubscriptionInfo:
-    sources = clean_lines(payload.sources)
+    sources = clean_source_entries([s.model_dump() for s in payload.sources])
     async with make_async_client(payload.base_url, payload.api_token) as client:
         subscription = await with_error_mapping(client.replace_sources, token, sources)
 

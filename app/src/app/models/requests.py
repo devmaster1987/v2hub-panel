@@ -30,6 +30,41 @@ class CredentialsMixin(BaseModel):
         return value
 
 
+class SourceEntry(BaseModel):
+    """
+    Per-source object: data plus its is_hidden/max_depth settings.
+
+    This is the ONLY accepted shape for sources in requests -- the panel
+    backend intentionally does not accept plain strings here anymore.
+    Backward compatibility with the old "string OR object" mixed format
+    was dropped on purpose to eliminate the class of bugs where is_hidden/
+    max_depth silently got lost because a caller sent a bare string.
+    """
+
+    data: str = Field(..., min_length=1)
+    is_hidden: bool = False
+    max_depth: int = Field(default=3, ge=0, le=3)
+
+    @field_validator("data")
+    @classmethod
+    def validate_data(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("data must not be empty")
+        return value
+
+    @field_validator("max_depth", mode="before")
+    @classmethod
+    def clamp_max_depth(cls, value: object) -> int:
+        """Coerce out-of-range/invalid values to the nearest valid depth
+        instead of rejecting the request outright."""
+        try:
+            depth = int(value)  # type: ignore[arg-type]
+        except (TypeError, ValueError):
+            return 3
+        return max(0, min(3, depth))
+
+
 class ListSubscriptionsRequest(CredentialsMixin):
     """Credentials-only body for list/get endpoints."""
 
@@ -37,7 +72,7 @@ class ListSubscriptionsRequest(CredentialsMixin):
 class SubscriptionCreateRequest(CredentialsMixin):
     name: str = Field(..., min_length=1, max_length=64)
     description: str | None = Field(default=None, max_length=255)
-    sources: list[str] = Field(default_factory=list)
+    sources: list[SourceEntry] = Field(default_factory=list)
 
     @field_validator("name")
     @classmethod
@@ -71,4 +106,4 @@ class SubscriptionUpdateRequest(CredentialsMixin):
 
 
 class SourcesRequest(CredentialsMixin):
-    sources: list[str] = Field(default_factory=list)
+    sources: list[SourceEntry] = Field(default_factory=list)

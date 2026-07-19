@@ -5,7 +5,8 @@
 import * as API from "../api.js";
 import * as State from "../state.js";
 import { $, setValue, getValue, clearChildren, addClass, removeClass } from "../utils/dom.js";
-import { escapeHtml, inferBadgeClass, formatSource, extractComment } from "../utils/helpers.js";
+import { escapeHtml, inferBadgeClass, formatSource, extractComment, clampDepth, detectSourceType } from "../utils/helpers.js";
+import { createSourceListEditor } from "../utils/source-list-editor.js";
 import { showToast, showError } from "./toast.js";
 import { openModal, closeModal } from "./modals.js";
 import { showSaveBar, hideSaveBar } from "./subscriptions.js";
@@ -67,6 +68,7 @@ export function renderSources() {
   sources.forEach((src, idx) => {
     const item = document.createElement("div");
     item.className = "source-item";
+    if (src.is_hidden) item.classList.add("is-source-hidden");
     item.dataset.idx = idx;
     item.dataset.id = src.id;
     item.draggable = true;
@@ -82,6 +84,13 @@ export function renderSources() {
         ${escapeHtml(src.source_type || "config")}
       </span>
       <div class="source-actions">
+        <button
+          class="mini-btn eye-btn${src.is_hidden ? " is-hidden-on" : ""}"
+          type="button"
+          title="${src.is_hidden ? "Скрыт от пользователей — нажмите, чтобы показать" : "Виден пользователям — нажмите, чтобы скрыть"}"
+        >
+          ${src.is_hidden ? "🙈" : "👁"}
+        </button>
         ${src.source_type !== "config" ? `
           <button class="mini-btn refresh-btn" type="button" title="Обновить">↻</button>
         ` : ""}
@@ -90,6 +99,11 @@ export function renderSources() {
     `;
 
     // FIX: addEventListener вместо onclick-строк — src.id не попадает в HTML-атрибуты
+    const eyeBtn = item.querySelector(".eye-btn");
+    if (eyeBtn) {
+      eyeBtn.addEventListener("click", (e) => toggleSourceHidden(e, src.id));
+    }
+
     const ctxBtn = item.querySelector(".ctx-btn");
     if (ctxBtn) {
       ctxBtn.addEventListener("click", (e) => openCtxMenu(e, src.id));
@@ -186,6 +200,9 @@ function setupDragHandlers(item, idx) {
   });
 }
 
+// One editor instance reused every time the modal opens.
+const addSourceEditor = createSourceListEditor("add-source-rows");
+
 /**
  * Open add source modal
  */
@@ -193,8 +210,15 @@ export function openAddSourceModal() {
   document.querySelectorAll(".source-type-item").forEach((el) => {
     el.classList.toggle("selected", el.dataset.type === "config");
   });
-  setValue($("source-data-input"), "");
+  addSourceEditor.reset();
   openModal("modal-add-source");
+}
+
+/**
+ * Add one more empty row to the "add source" modal.
+ */
+export function addSourceRow() {
+  addSourceEditor.addRow();
 }
 
 /**
@@ -207,39 +231,57 @@ export function openAddSourceModal() {
  *
  * Это соответствует поведению удаления и перестановки, которые тоже
  * работают через draft → save.
+ *
+ * Each row in the modal carries its own is_hidden/max_depth, set via the
+ * per-row eye toggle and collapsible "Расширенные настройки" — no more
+ * single global textarea with one comment-derived setting for everything.
  */
 export function addSource() {
-  const data = getValue($("source-data-input")).trim();
-  if (!data) {
-    showToast("Введите данные источника");
+  const payloadSources = addSourceEditor.toPayloadSources();
+  if (!payloadSources.length) {
+    showToast("Введите данные хотя бы одного источника");
     return;
   }
 
   const sub = State.getCurrentSubscription();
   if (!sub) return;
 
-  // Разбиваем по строкам — можно вставить сразу несколько конфигов
-  const lines = data.split("\n").map((l) => l.trim()).filter(Boolean);
-
   const currentSources = State.getDraftSources();
   const nextIdx = currentSources.length;
 
-  const newEntries = lines.map((line, i) => {
-    // Определяем тип
-    let source_type = "config";
-    if (line.startsWith("http://") || line.startsWith("https://")) source_type = "external_url";
-    else if (!line.includes("://")) source_type = "internal_token";
+  const rejected = [];
+  const newEntries = [];
+  const baseUrl = State.getEffectiveBaseUrl();
 
-    return {
+  payloadSources.forEach((entry, i) => {
+    const source_type = detectSourceType(entry.data, baseUrl);
+    if (!source_type) {
+      rejected.push(entry.data);
+      return;
+    }
+
+    newEntries.push({
       // Временный client-side ID; сервер назначит настоящий после сохранения
-      id: `draft_${Date.now()}_${nextIdx + i}`,
-      data: line,
+      id: `draft_${Date.now()}_${nextIdx + newEntries.length}`,
+      data: entry.data,
       source_type,
-      order_index: nextIdx + i,
+      order_index: nextIdx + newEntries.length,
       comment: null,
+      is_hidden: Boolean(entry.is_hidden),
+      max_depth: clampDepth(entry.max_depth),
       _isDraft: true, // маркер — ещё не сохранён на сервере
-    };
+    });
   });
+
+  if (rejected.length) {
+    showToast(
+      rejected.length === 1
+        ? `Не удалось распознать источник: "${rejected[0].slice(0, 40)}"`
+        : `Не удалось распознать ${rejected.length} источник(ов) — проверьте формат`
+    );
+  }
+
+  if (!newEntries.length) return;
 
   const updated = [...currentSources, ...newEntries];
   State.updateDraftSources(updated);
@@ -249,9 +291,32 @@ export function addSource() {
   renderSources();
 
   showToast(
-    lines.length > 1
-      ? `Добавлено ${lines.length} источника — не забудьте сохранить`
+    newEntries.length > 1
+      ? `Добавлено ${newEntries.length} источника — не забудьте сохранить`
       : "Источник добавлен — не забудьте сохранить"
+  );
+}
+
+/**
+ * Toggle a source's is_hidden flag directly from the list (eye button),
+ * without opening the settings modal. Draft-only, saved together with
+ * the rest of the changes.
+ */
+export function toggleSourceHidden(e, srcId) {
+  e.stopPropagation();
+
+  const arr = State.getDraftSources();
+  const idx = arr.findIndex((s) => s.id === srcId);
+  if (idx === -1) return;
+
+  arr[idx] = { ...arr[idx], is_hidden: !arr[idx].is_hidden };
+  State.updateDraftSources(arr);
+  showSaveBar();
+  renderSources();
+  showToast(
+    arr[idx].is_hidden
+      ? "Источник скрыт от пользователей — не забудьте сохранить"
+      : "Источник снова виден — не забудьте сохранить"
   );
 }
 
@@ -302,11 +367,14 @@ export function openCtxMenu(e, srcId) {
   State.state.ctxSourceId = srcId;
 
   const editItem = $("ctx-edit-comment");
+  const editLabel = $("ctx-edit-comment-label");
   const arr = State.getDraftSources();
   const source = arr.find((s) => s.id === srcId);
   if (!source) return;
 
-  editItem.style.display = source.source_type === "config" ? "" : "none";
+  editItem.style.display = "";
+  editLabel.textContent =
+    source.source_type === "config" ? "Редактировать конфиг" : "Редактировать подписку";
 
   _ctxAnchorEl = e.currentTarget;
   _positionCtxMenu();
@@ -591,10 +659,19 @@ export function closeEditorMenu() {
   _closeEditorMenu();
 }
 
-// ── Comment Modal ─────────────────────────────────────────────────────────────
+// ── Source Settings Modal (comment + is_hidden + max_depth) ──────────────────
 
 /**
- * Edit source comment from context menu
+ * Local, un-saved state for the currently open source-settings modal.
+ * Kept separate from the draft source until "Сохранить" is pressed, same
+ * pattern as the comment-only editor before it.
+ */
+let _editingSourceState = { is_hidden: false, max_depth: 3 };
+
+/**
+ * Open source settings (comment, visibility, nesting depth) from context menu.
+ * Comment editing only applies to CONFIG sources — external/internal links
+ * don't carry a comment, so that field is hidden (not just disabled) for them.
  */
 export function editSourceCommentFromCtx() {
   closeCtxMenu();
@@ -603,32 +680,109 @@ export function editSourceCommentFromCtx() {
   const source = arr.find((s) => s.id === State.state.ctxSourceId);
 
   if (source) {
-    setValue($("edit-source-comment"), extractComment(source.data) || "");
+    const isConfig = source.source_type === "config";
+
+    const titleEl = $("source-settings-title");
+    if (titleEl) {
+      titleEl.textContent = isConfig ? "Редактировать конфиг" : "Редактировать подписку";
+    }
+
+    const commentGroup = $("source-comment-group");
+    if (commentGroup) {
+      commentGroup.style.display = isConfig ? "" : "none";
+    }
+
+    setValue($("edit-source-comment"), isConfig ? extractComment(source.data) || "" : "");
+
+    _editingSourceState = {
+      is_hidden: Boolean(source.is_hidden),
+      max_depth: clampDepth(source.max_depth ?? 3),
+    };
+    _renderSourceHiddenToggle();
+    _renderDepthStepper();
+    _collapseSourceAdvanced();
+
     openModal("modal-edit-source-comment");
   }
 }
 
+function _renderSourceHiddenToggle() {
+  const toggle = $("edit-source-hidden-toggle");
+  if (!toggle) return;
+  toggle.classList.toggle("on", _editingSourceState.is_hidden);
+  toggle.setAttribute("aria-checked", String(_editingSourceState.is_hidden));
+}
+
+export function toggleSourceHiddenInModal() {
+  _editingSourceState.is_hidden = !_editingSourceState.is_hidden;
+  _renderSourceHiddenToggle();
+}
+
+function _collapseSourceAdvanced() {
+  const toggle = $("source-advanced-toggle");
+  const body = $("source-advanced-body");
+  if (toggle) toggle.classList.remove("open");
+  if (body) body.classList.remove("open");
+}
+
+export function toggleSourceAdvanced() {
+  const toggle = $("source-advanced-toggle");
+  const body = $("source-advanced-body");
+  if (!toggle || !body) return;
+  const open = !body.classList.contains("open");
+  toggle.classList.toggle("open", open);
+  body.classList.toggle("open", open);
+}
+
+function _renderDepthStepper() {
+  const valueEl = $("depth-stepper-value");
+  const minusBtn = $("depth-stepper-minus");
+  const plusBtn = $("depth-stepper-plus");
+  if (valueEl) valueEl.textContent = String(_editingSourceState.max_depth);
+  if (minusBtn) minusBtn.disabled = _editingSourceState.max_depth <= 0;
+  if (plusBtn) plusBtn.disabled = _editingSourceState.max_depth >= 3;
+}
+
 /**
- * Save source comment — только в draft, без API-запроса.
+ * Step max_depth by +1/-1, always kept within [0, 3]. Out-of-range values
+ * (which shouldn't normally happen from the UI, but could if state was
+ * set programmatically) are clamped rather than rejected.
+ */
+export function stepSourceDepth(delta) {
+  _editingSourceState.max_depth = clampDepth(_editingSourceState.max_depth + delta);
+  _renderDepthStepper();
+}
+
+/**
+ * Save source settings — только в draft, без API-запроса.
  * Отправится на сервер вместе с остальными изменениями при нажатии «Сохранить».
+ * Comment (encoded into `data` as a #fragment) only applies to CONFIG
+ * sources; for external/internal links `data` is left untouched.
  */
 export function saveSourceComment() {
   const arr = State.getDraftSources();
   const idx = arr.findIndex((s) => s.id === State.state.ctxSourceId);
 
   if (idx !== -1) {
-    const comment = getValue($("edit-source-comment")).trim();
-    const source = arr[idx];
+    const source = { ...arr[idx] };
 
-    const hashIdx = source.data.indexOf("#");
-    const base = hashIdx >= 0 ? source.data.slice(0, hashIdx) : source.data;
-    source.data = comment ? `${base}#${encodeURIComponent(comment)}` : base;
+    if (source.source_type === "config") {
+      const comment = getValue($("edit-source-comment")).trim();
+      const hashIdx = source.data.indexOf("#");
+      const base = hashIdx >= 0 ? source.data.slice(0, hashIdx) : source.data;
+      source.data = comment ? `${base}#${encodeURIComponent(comment)}` : base;
+    }
+
+    source.is_hidden = Boolean(_editingSourceState.is_hidden);
+    source.max_depth = clampDepth(_editingSourceState.max_depth);
+
+    arr[idx] = source;
 
     State.updateDraftSources(arr);
     showSaveBar();
     renderSources();
     closeModal("modal-edit-source-comment");
     State.state.ctxSourceId = null;
-    showToast("Комментарий обновлён — не забудьте сохранить");
+    showToast("Настройки источника обновлены — не забудьте сохранить");
   }
 }

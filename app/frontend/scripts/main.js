@@ -74,11 +74,13 @@ window.connect           = Subscriptions.connectToAPI;
 window.disconnect        = Subscriptions.disconnectFromAPI;
 window.reloadAll         = Subscriptions.reloadAll;
 window.openCreateModal   = Subscriptions.openCreateModal;
+window.addCreateSourceRow = Subscriptions.addCreateSourceRow;
 window.createSubscription = Subscriptions.createSubscription;
 window.openEditor        = Subscriptions.openEditor;
 window.goBack            = Subscriptions.goBack;
 window.switchTab         = Sources.switchTabUI;
 window.openAddSourceModal = Sources.openAddSourceModal;
+window.addSourceRow = Sources.addSourceRow;
 window.addSource         = Sources.addSource;
 window.refreshSource     = Sources.refreshSource;
 window.openCtxMenu       = Sources.openCtxMenu;
@@ -99,6 +101,9 @@ window.saveChanges       = Subscriptions.saveChanges;
 window.discardChanges    = Subscriptions.discardChanges;
 window.saveSourceComment = Sources.saveSourceComment;
 window.editSourceCommentFromCtx = Sources.editSourceCommentFromCtx;
+window.toggleSourceHiddenInModal = Sources.toggleSourceHiddenInModal;
+window.toggleSourceAdvanced = Sources.toggleSourceAdvanced;
+window.stepSourceDepth = Sources.stepSourceDepth;
 window.closeModal        = closeModal;
 
 // ── About popup ──────────────────────────────────────────────────────────────

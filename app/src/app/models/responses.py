@@ -18,6 +18,8 @@ class SourceInfo(BaseModel):
     data: str
     order_index: int
     comment: str | None = None
+    is_hidden: bool = False
+    max_depth: int = 3
 
 
 class SubscriptionInfo(BaseModel):

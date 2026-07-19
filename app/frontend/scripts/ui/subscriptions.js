@@ -5,7 +5,8 @@
 import * as API from "../api.js";
 import * as State from "../state.js";
 import { $, setText, setValue, getValue, clearChildren, createElement } from "../utils/dom.js";
-import { escapeHtml, getAvatarColor, splitLines } from "../utils/helpers.js";
+import { escapeHtml, getAvatarColor, splitLines, clampDepth, detectSourceType } from "../utils/helpers.js";
+import { createSourceListEditor } from "../utils/source-list-editor.js";
 import { showToast, showError } from "./toast.js";
 import { openModal, closeModal } from "./modals.js";
 
@@ -86,7 +87,7 @@ export function renderSubscriptionsList() {
         <div class="sub-desc">${escapeHtml(sub.description || "Без описания")}</div>
       </div>
       <div class="sub-meta">
-        <span>${sourcesCount} источ.</span>
+        <span>${sourcesCount} конф.</span>
         <span class="chevron">›</span>
       </div>
     `;
@@ -275,7 +276,17 @@ export async function saveChanges() {
       saveBtn.textContent = "Сохранение…";
     }
 
-    const sources = State.getDraftSources().map((s) => s.data);
+    // FIX: раньше отправлялись только строки (s.data), из-за чего
+    // is_hidden/max_depth, выставленные через модалку настроек источника,
+    // терялись при "Сохранить" — сервер применял дефолты (false/3) для
+    // каждого источника, включая уже настроенные. Теперь отправляем
+    // полный объект на каждый источник, чтобы replaceSources не затирал
+    // ранее выставленные значения.
+    const sources = State.getDraftSources().map((s) => ({
+      data: s.data,
+      is_hidden: Boolean(s.is_hidden),
+      max_depth: clampDepth(s.max_depth ?? 3),
+    }));
     await API.replaceSources(sub.token, sources);
 
     // Update snapshot so discard works correctly after save
@@ -423,18 +434,33 @@ export async function disconnectFromAPI() {
   }
 }
 
+// One editor instance reused every time the modal opens.
+const createSourceEditor = createSourceListEditor("create-source-rows");
+
 /**
  * Open create subscription modal
  */
 export function openCreateModal() {
   setValue($("create-name"), "");
   setValue($("create-desc"), "");
-  setValue($("create-sources"), "");
+  createSourceEditor.reset();
   openModal("modal-create-sub");
 }
 
 /**
- * Create subscription
+ * Add one more empty row to the "create subscription" modal.
+ */
+export function addCreateSourceRow() {
+  createSourceEditor.addRow();
+}
+
+/**
+ * Create subscription.
+ *
+ * Each initial source row carries its own is_hidden/max_depth (set via
+ * the per-row eye toggle and collapsible "Расширенные настройки"), same
+ * as the add-source modal -- rows with only default settings are sent as
+ * plain strings, rows with any non-default setting as objects.
  */
 export async function createSubscription() {
   try {
@@ -445,7 +471,28 @@ export async function createSubscription() {
     }
 
     const description = getValue($("create-desc")).trim();
-    const sources = splitLines(getValue($("create-sources")));
+    const allSources = createSourceEditor.toPayloadSources();
+
+    const baseUrl = State.getEffectiveBaseUrl();
+    const sources = [];
+    const rejected = [];
+    for (const entry of allSources) {
+      if (detectSourceType(entry.data, baseUrl)) {
+        sources.push(entry);
+      } else {
+        rejected.push(entry.data);
+      }
+    }
+
+    if (rejected.length) {
+      showToast(
+        rejected.length === 1
+          ? `Не удалось распознать источник: "${rejected[0].slice(0, 40)}"`
+          : `Не удалось распознать ${rejected.length} источник(ов) — проверьте формат`
+      );
+    }
+
+    if (allSources.length && !sources.length) return;
 
     const data = await API.createSubscription({
       name,
