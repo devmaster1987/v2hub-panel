@@ -21,6 +21,7 @@ env/
 ssl/
 data/
 certbots/
+certbot/
 
 # IDE
 .idea/
