@@ -69,21 +69,33 @@ export function normalizeType(raw) {
   return "internal_token";
 }
 
-const KNOWN_CONFIG_SCHEMES = ["vless://", "vmess://", "ss://", "trojan://", "socks://"];
+// A generic "scheme://..." shape covers vless, vmess, ss, trojan, socks,
+// hysteria2, tuic, wireguard, and any future protocol v2hub-core adds
+// support for -- we don't want to maintain (and inevitably fall behind)
+// a hardcoded whitelist of proxy schemes here. RFC 3986-ish: letters,
+// digits, +, -, . in the scheme name, followed by "://".
+const GENERIC_SCHEME_RE = /^[a-z][a-z0-9+.-]*:\/\//i;
 
 /**
  * Strictly classify a piece of source data the USER is entering (add
  * source / create subscription forms), rejecting anything that doesn't
  * clearly match a known shape:
  *
- *   - a known proxy config scheme (vless://, vmess://, ss://, trojan://,
- *     socks://)              -> "config"
- *   - an http(s):// URL that starts with the current connection's
- *     base_url                -> "internal_token" (it's a link back into
- *                                 this same v2hub-core instance)
- *   - any other http(s):// URL -> "external_url"
- *   - anything else            -> null (unrecognized, reject it instead
- *                                 of guessing "internal_token" for junk)
+ *   - http(s):// that starts with the current connection's base_url
+ *     -> "internal_token" (it's a link back into this same v2hub-core
+ *     instance)
+ *   - any other http(s):// URL                                -> "external_url"
+ *   - any other "scheme://..." (vless, vmess, ss, trojan, socks,
+ *     hysteria2, tuic, wireguard, or any future proxy protocol)
+ *                                                               -> "config"
+ *   - anything without a recognizable "scheme://" prefix at all
+ *                                                               -> null
+ *     (unrecognized/junk, reject it instead of guessing)
+ *
+ * Deliberately does NOT hardcode a whitelist of proxy scheme names --
+ * new protocols v2hub-core adds support for should work here without
+ * a matching frontend change. The only thing rejected is input that
+ * doesn't even look like a URI (no "scheme://" at all).
  *
  * @param {string} raw - Raw source string entered by the user
  * @param {string} [baseUrl] - The active connection's base_url, used to
@@ -97,16 +109,16 @@ export function detectSourceType(raw, baseUrl) {
 
   const lower = s.toLowerCase();
 
-  if (KNOWN_CONFIG_SCHEMES.some((scheme) => lower.startsWith(scheme))) {
-    return "config";
-  }
-
   if (lower.startsWith("http://") || lower.startsWith("https://")) {
     const normalizedBase = (baseUrl || "").trim().replace(/\/+$/, "").toLowerCase();
     if (normalizedBase && lower.startsWith(normalizedBase)) {
       return "internal_token";
     }
     return "external_url";
+  }
+
+  if (GENERIC_SCHEME_RE.test(s)) {
+    return "config";
   }
 
   // Not a recognized config scheme and not an http(s) URL at all -- this

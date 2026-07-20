@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import hashlib
 import logging
 import re
 import time
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -137,14 +139,78 @@ app.add_middleware(
     allow_headers=settings.cors_allow_headers,
 )
 
+
+@app.middleware("http")
+async def static_cache_headers(request: Request, call_next):
+    """
+    Long-lived, immutable caching for /static/* is safe specifically
+    because every reference to those assets is content-hash-versioned
+    (see _inject_asset_version) -- a changed file gets a new ?v=... URL,
+    so there's never a need to revalidate the old one. This is the other
+    half of the cache-busting fix: without it, aggressive default caching
+    behavior varies by client (and Telegram's in-app WebView in
+    particular has historically cached far more aggressively than a
+    regular browser, with no user-facing way to clear it), so we set it
+    explicitly rather than relying on defaults.
+    """
+    response = await call_next(request)
+    if request.url.path.startswith("/static/"):
+        response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+    return response
+
 app.include_router(connection.router)
 app.include_router(subscriptions.router)
 app.include_router(public.router)
 
+
+def _compute_asset_version(frontend_dir: Path) -> str:
+    """
+    Hash the content of every file under frontend_dir (scripts, styles,
+    etc.) into a short, stable version string. Changes automatically
+    whenever any static asset changes -- no manual version bump needed,
+    which is what actually matters for cache-busting to be reliable: a
+    forgotten manual bump is exactly how a stale-cache bug like this one
+    happens in the first place.
+
+    Falls back to the current timestamp if the directory can't be read,
+    so cache-busting still works (just less precisely) rather than
+    crashing startup.
+    """
+    if not frontend_dir.exists():
+        return format(int(time.time()), "x")
+
+    digest = hashlib.sha256()
+    try:
+        for path in sorted(frontend_dir.rglob("*")):
+            if path.is_file():
+                digest.update(str(path.relative_to(frontend_dir)).encode())
+                digest.update(path.read_bytes())
+    except OSError:
+        return format(int(time.time()), "x")
+
+    return digest.hexdigest()[:12]
+
+
+ASSET_VERSION = _compute_asset_version(settings.frontend_dir)
+
+_ASSET_SRC_RE = re.compile(r'((?:src|href)=")(/static/[^"?]+)(")')
+
+
+def _inject_asset_version(html: str, version: str) -> str:
+    """Append ?v=<version> to every /static/... src or href in the HTML."""
+    return _ASSET_SRC_RE.sub(rf"\1\2?v={version}\3", html)
+
+
 if settings.frontend_dir.exists():
     app.mount(
         "/static",
-        StaticFiles(directory=str(settings.frontend_dir)),
+        StaticFiles(
+            directory=str(settings.frontend_dir),
+            # Safe to cache aggressively: every reference to a static
+            # asset now carries a content-hash ?v=... query param (see
+            # _inject_asset_version), so a changed file gets a new URL
+            # rather than needing this cache to expire/revalidate.
+        ),
         name="static",
     )
 
@@ -155,13 +221,36 @@ if settings.frontend_dir.exists():
 
 @app.get("/", response_class=HTMLResponse)
 def index() -> HTMLResponse:
-    """Serve frontend index page."""
+    """
+    Serve frontend index page.
+
+    Every <script src="..."> / <link href="..."> pointing at /static is
+    rewritten to include a cache-busting `?v=<asset_hash>` query param.
+    This matters especially for the Telegram Mini App WebView, which the
+    user cannot manually hard-refresh or clear the cache of: without a
+    changing URL, a stale main.js can persist indefinitely across
+    deploys with no way for the end user to force a reload. The hash is
+    computed once at process startup (see _compute_asset_version below)
+    from the actual content of the frontend directory, so it changes
+    automatically on every deploy that touches any static file --
+    nobody has to remember to bump a version number by hand.
+    """
     if not settings.frontend_index.exists():
         raise HTTPException(
             status_code=500,
             detail="Frontend index.html not found.",
         )
-    return HTMLResponse(settings.frontend_index.read_text(encoding="utf-8"))
+    html = settings.frontend_index.read_text(encoding="utf-8")
+    html = _inject_asset_version(html, ASSET_VERSION)
+    return HTMLResponse(
+        html,
+        headers={
+            # The HTML itself must always be revalidated -- it's what
+            # carries the (versioned) links to everything else, so it
+            # can never be served stale from a client-side cache.
+            "Cache-Control": "no-cache, must-revalidate",
+        },
+    )
 
 
 @app.get("/metrics")

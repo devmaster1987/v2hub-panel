@@ -148,7 +148,7 @@ export function createSourceListEditor(containerId) {
     depthRow.innerHTML = `
       <div class="setting-row-text">
         <div class="setting-row-title">Глубина вложенности</div>
-        <div class="setting-row-hint">На сколько уровней вверх по цепочке импорта будет доступен этот источник (0–3).</div>
+        <div class="setting-row-hint">Сколько уровней вложенных подписок разрешено (0–3)</div>
       </div>
     `;
 

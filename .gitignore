@@ -38,3 +38,4 @@ logs/
 
 # Docker
 *.pid
+node_modules

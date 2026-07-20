@@ -418,7 +418,11 @@
 
         <div class="source-row-list" id="add-source-rows"></div>
 
-        <button class="add-row-btn" type="button" onclick="addSourceRow()">
+        <button
+          class="add-row-btn"
+          type="button"
+          onclick="addSourceRow()"
+        >
           + Добавить ещё строку
         </button>
 
@@ -562,9 +566,7 @@
           ✕
         </button>
 
-        <div class="modal-title" id="source-settings-title">
-          Редактировать конфиг
-        </div>
+        <div class="modal-title" id="source-settings-title">Редактировать конфиг</div>
 
         <div class="input-group" id="source-comment-group">
           <label class="input-label">Комментарий</label>
@@ -578,17 +580,13 @@
             placeholder="Введите комментарий"
           />
 
-          <div class="input-hint" id="source-comment-hint">
-            Отображается только в интерфейсе
-          </div>
+          <div class="input-hint" id="source-comment-hint">Отображается только в интерфейсе</div>
         </div>
 
         <div class="setting-row">
           <div class="setting-row-text">
             <div class="setting-row-title">Скрыт от пользователей</div>
-            <div class="setting-row-hint">
-              Источник останется в подписке, но не попадёт в резолв
-            </div>
+            <div class="setting-row-hint">Источник останется в подписке, но не попадёт в резолв</div>
           </div>
           <button
             type="button"
@@ -614,10 +612,7 @@
             <div class="setting-row">
               <div class="setting-row-text">
                 <div class="setting-row-title">Глубина вложенности</div>
-                <div class="setting-row-hint">
-                  На сколько уровней вверх по цепочке импорта будет доступен
-                  этот источник (0–3).
-                </div>
+                <div class="setting-row-hint">Сколько уровней вложенных подписок разрешено (0–3)</div>
               </div>
               <div class="depth-stepper">
                 <button
@@ -628,9 +623,7 @@
                 >
                   −
                 </button>
-                <span class="depth-stepper-value" id="depth-stepper-value"
-                  >3</span
-                >
+                <span class="depth-stepper-value" id="depth-stepper-value">3</span>
                 <button
                   type="button"
                   class="depth-stepper-btn"
@@ -718,29 +711,20 @@
     <div class="editor-menu" id="editor-menu" style="min-width: 210px">
       <div
         class="editor-menu-item"
-        onclick="
-          openEditSubModal();
-          closeEditorMenu();
-        "
+        onclick="openEditSubModal();closeEditorMenu()"
       >
         ✎ Редактировать подписку
       </div>
       <div
         class="editor-menu-item"
-        onclick="
-          reloadSelected();
-          closeEditorMenu();
-        "
+        onclick="reloadSelected();closeEditorMenu()"
       >
         ↻ Обновить данные
       </div>
       <div class="editor-divider"></div>
       <div
         class="editor-menu-item danger"
-        onclick="
-          deleteSubConfirm();
-          closeEditorMenu();
-        "
+        onclick="deleteSubConfirm();closeEditorMenu()"
       >
         🗑 Удалить подписку
       </div>
@@ -766,11 +750,7 @@
         <button
           class="error-notification-close"
           type="button"
-          onclick="
-            document
-              .getElementById('error-notification')
-              .classList.remove('show')
-          "
+          onclick="document.getElementById('error-notification').classList.remove('show')"
           aria-label="Закрыть"
         >
           ✕
