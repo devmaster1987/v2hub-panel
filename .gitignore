@@ -20,8 +20,8 @@ env/
 *.crt
 ssl/
 data/
-certbots/
 certbot/
+letsencrypt/
 
 # IDE
 .idea/
@@ -39,3 +39,8 @@ logs/
 # Docker
 *.pid
 node_modules
+
+# Production secrets
+nginx/nginx.conf
+nginx/*.conf
+!nginx/nginx.conf.template

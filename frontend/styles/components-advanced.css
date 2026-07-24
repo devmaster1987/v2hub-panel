@@ -1,0 +1,865 @@
+/**
+ * Complex components - tabs, modals, lists, etc.
+ */
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 8px;
+  padding: 14px 18px 0;
+  overflow-x: auto;
+  overflow-y: visible;
+  scrollbar-width: none;
+  flex-shrink: 0;
+  /* Critical: prevent tabs from causing parent overflow on desktop */
+  min-width: 0;
+  max-width: 100%;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  height: 42px;
+  padding: 0 14px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.tab:hover {
+  transform: translateY(-1px);
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.tab.active {
+  background: linear-gradient(135deg, rgba(92, 167, 255, 0.18), rgba(55, 192, 242, 0.1));
+  border-color: rgba(92, 167, 255, 0.24);
+  color: #fff;
+}
+
+/* Lists */
+.list {
+  display: grid;
+  gap: 10px;
+}
+
+.toolbar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+/* Subscription cards */
+.sub-card {
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.015));
+  border-radius: var(--radius-lg);
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: transform var(--t), border-color var(--t), background var(--t), box-shadow var(--t);
+  position: relative;
+  overflow: hidden;
+  text-align: left;
+}
+
+.sub-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(600px 120px at 0% 0%, rgba(92, 167, 255, 0.1), transparent 56%);
+  opacity: 0;
+  transition: opacity var(--t);
+  pointer-events: none;
+}
+
+.sub-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(92, 167, 255, 0.22);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.2);
+}
+
+.sub-card:hover::before {
+  opacity: 1;
+}
+
+.sub-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-weight: 800;
+  flex-shrink: 0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.av-blue {
+  background: linear-gradient(135deg, #5ca7ff, #2563eb);
+}
+.av-green {
+  background: linear-gradient(135deg, #4ade80, #16a34a);
+}
+.av-purple {
+  background: linear-gradient(135deg, #a78bfa, #7c3aed);
+}
+.av-orange {
+  background: linear-gradient(135deg, #fb923c, #ea580c);
+}
+.av-red {
+  background: linear-gradient(135deg, #fb7185, #e11d48);
+}
+
+.sub-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.sub-name {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sub-desc {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sub-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.chevron {
+  color: #7f95ad;
+}
+
+/* Stats */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin: 16px 0 14px;
+}
+
+.stat {
+  padding: 14px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.stat-label {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* Sources */
+.sources-list {
+  display: grid;
+  gap: 10px;
+}
+
+.sources-toolbar {
+  padding: 0 0 14px;
+}
+
+.hint {
+  margin-top: 10px;
+  color: var(--hint);
+  font-size: 12px;
+}
+
+.source-item {
+  display: grid;
+  grid-template-columns: 24px 10px minmax(0, 1fr) auto auto;
+  gap: 12px;
+  align-items: center;
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+  transition: border-color var(--t), background var(--t), transform var(--t), opacity var(--t);
+}
+
+.source-item:hover {
+  border-color: rgba(92, 167, 255, 0.18);
+  background: rgba(255, 255, 255, 0.045);
+  transform: translateY(-1px);
+}
+
+.source-item.dragging {
+  opacity: 0.55;
+  transform: scale(0.985);
+}
+
+.source-item.drag-over {
+  border-color: rgba(92, 167, 255, 0.45);
+  background: rgba(92, 167, 255, 0.08);
+}
+
+.drag-handle {
+  color: var(--hint);
+  cursor: grab;
+  user-select: none;
+  text-align: center;
+  font-size: 14px;
+  touch-action: none;
+}
+
+.source-status {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--success);
+  box-shadow: 0 0 0 6px rgba(74, 222, 128, 0.08);
+}
+
+.source-data {
+  color: var(--text);
+  font-size: 13px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.source-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 4px;
+}
+
+.drag-hint {
+  margin-top: 12px;
+  color: var(--hint);
+  text-align: center;
+  font-size: 12px;
+}
+
+/* Source type selector */
+.source-type-list {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.source-type-item {
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  cursor: pointer;
+  transition: border-color var(--t), transform var(--t), background var(--t);
+}
+
+.source-type-item:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.source-type-item.selected {
+  border-color: rgba(92, 167, 255, 0.4);
+  background: rgba(92, 167, 255, 0.1);
+}
+
+.source-type-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 15px;
+  display: grid;
+  place-items: center;
+  background: rgba(92, 167, 255, 0.13);
+  border: 1px solid rgba(92, 167, 255, 0.15);
+  flex-shrink: 0;
+  font-size: 18px;
+}
+
+.source-type-name {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.source-type-hint {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* Preview */
+.preview-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.preview-card {
+  padding: 16px 14px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.preview-value {
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.preview-label {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.preview-box {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(7, 13, 24, 0.52);
+  padding: 14px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  color: #c7d4e7;
+  max-height: 260px;
+  overflow-x: auto;
+  overflow-y: auto;
+  max-width: 100%;
+  box-sizing: border-box;
+  display: block;
+  /* CRITICAL: contain scroll, no page-level overflow */
+  contain: layout style;
+  /* Allow text selection */
+  user-select: text;
+  -webkit-user-select: text;
+  cursor: text;
+}
+
+.preview-line {
+  display: flex;
+  gap: 10px;
+  padding: 3px 0;
+  width: max-content;
+  min-width: 100%;
+}
+
+.preview-num {
+  width: 22px;
+  color: var(--hint);
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.preview-text {
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.preview-footer {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* Export */
+.export-grid {
+  display: grid;
+  gap: 14px;
+  /* Must not be cut off — tab-content scrolls, not clips */
+  min-height: min-content;
+}
+
+.export-block {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 14px;
+  /* Prevent the block itself from expanding beyond panel width */
+  min-width: 0;
+  overflow: hidden;
+}
+
+.export-label {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.export-desc {
+  font-size: 13px;
+  color: var(--hint);
+  margin-bottom: 10px;
+}
+
+.export-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.025);
+  border-radius: 16px;
+  padding: 12px 14px;
+  /* CRITICAL: clip overflow so long text can't escape the box */
+  overflow: hidden;
+  min-width: 0;
+}
+
+.export-value {
+  /* Take all available space but never push copy-btn out */
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 100%;
+  color: #dbeafe;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 13px;
+  white-space: nowrap;
+  /* Scroll within the box — the box clips, the value scrolls */
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+  /* Allow selecting text manually */
+  cursor: text;
+  user-select: text;
+  -webkit-user-select: text;
+  padding-bottom: 2px;
+}
+
+/* Thin webkit scrollbar inside export-value */
+.export-value::-webkit-scrollbar {
+  height: 3px;
+}
+.export-value::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 2px;
+}
+
+/* copy-btn must never shrink */
+.export-box .copy-btn {
+  flex-shrink: 0;
+}
+
+.export-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 4px 0 2px;
+  /* Ensure buttons are visible — no height collapse */
+  min-height: min-content;
+}
+
+.export-actions .btn {
+  width: 100%;
+  justify-content: center;
+}
+
+/* QR Card */
+.qr-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 0 8px;
+}
+
+.qr-card-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.06),
+    0 8px 28px rgba(0, 0, 0, 0.28),
+    0 2px 8px rgba(0, 0, 0, 0.16);
+  width: fit-content;
+}
+
+.qr-image {
+  display: block;
+  width: clamp(180px, 60vw, 260px);
+  height: clamp(180px, 60vw, 260px);
+  border-radius: 10px;
+  object-fit: contain;
+}
+
+.qr-caption {
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+  max-width: 260px;
+}
+
+/* Save bar — fixed at the bottom of the viewport */
+.save-bar {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(calc(100% + 32px));
+  /* FIX [Bug]: снижен с 200 до 100 — модалки (z-index:400) теперь всегда поверх */
+  z-index: 100;
+
+  display: flex;
+  gap: 10px;
+  padding: 10px 12px;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+
+  border: 1px solid var(--line2);
+  background: rgba(14, 22, 38, 0.92);
+  backdrop-filter: var(--blur);
+  border-radius: 20px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.48),
+    0 2px 8px rgba(0, 0, 0, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 0.2s ease;
+}
+
+.save-bar.visible {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.save-bar .btn {
+  flex: 1;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+/* Prevent save bar from overlapping the last content item */
+body.save-bar-open {
+  padding-bottom: 88px;
+}
+
+/* On small screens: stretch to full width with safe margin */
+@media (max-width: 520px) {
+  .save-bar {
+    bottom: 16px;
+    left: 16px;
+    right: 16px;
+    width: auto;
+    max-width: none;
+    transform: translateY(calc(100% + 32px));
+    border-radius: 18px;
+  }
+
+  .save-bar.visible {
+    transform: translateY(0);
+  }
+}
+
+/* ===========================
+   Toggle switch (source visibility)
+   =========================== */
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 2px;
+}
+
+.setting-row + .setting-row {
+  border-top: 1px solid var(--line);
+}
+
+.setting-row-text {
+  min-width: 0;
+}
+
+.setting-row-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.setting-row-hint {
+  font-size: 12px;
+  color: var(--hint);
+  margin-top: 2px;
+}
+
+.toggle-switch {
+  position: relative;
+  width: 46px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  transition:
+    background var(--t),
+    border-color var(--t);
+}
+
+.toggle-switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--muted);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transition:
+    transform var(--t),
+    background var(--t);
+}
+
+.toggle-switch.on {
+  background: linear-gradient(135deg, rgba(92, 167, 255, 0.32), rgba(55, 192, 242, 0.24));
+  border-color: rgba(92, 167, 255, 0.35);
+}
+
+.toggle-switch.on::after {
+  transform: translateX(18px);
+  background: linear-gradient(135deg, #5ca7ff, #37c0f2);
+}
+
+.toggle-switch:active::after {
+  width: 24px;
+}
+
+/* ===========================
+   Collapsible "Advanced settings" (more…)
+   =========================== */
+
+.advanced-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 2px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+  border-top: 1px solid var(--line);
+  margin-top: 4px;
+}
+
+.advanced-toggle:hover {
+  color: var(--text);
+}
+
+.advanced-toggle-chevron {
+  transition: transform var(--t);
+  color: var(--hint);
+  font-size: 12px;
+}
+
+.advanced-toggle.open .advanced-toggle-chevron {
+  transform: rotate(180deg);
+}
+
+.advanced-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows var(--t),
+    opacity var(--t);
+}
+
+.advanced-body.open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.advanced-body-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ===========================
+   Depth stepper (max_depth: 0-3)
+   =========================== */
+
+.depth-stepper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.depth-stepper-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  font-size: 17px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  transition:
+    background var(--t),
+    border-color var(--t),
+    opacity var(--t);
+}
+
+.depth-stepper-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: var(--line2);
+}
+
+.depth-stepper-btn:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.depth-stepper-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.depth-stepper-value {
+  min-width: 28px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ===========================
+   Dynamic source row list (add-source / create-subscription modals)
+   =========================== */
+
+.source-row-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.source-row {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 10px 10px 2px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.source-row-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.source-row-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.source-row-remove {
+  color: var(--danger);
+  flex-shrink: 0;
+}
+
+.source-row-remove:hover:not(:disabled) {
+  background: rgba(248, 113, 113, 0.1);
+  border-color: rgba(248, 113, 113, 0.3);
+}
+
+.source-row-remove:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Advanced toggle/body inside a source row need tighter spacing than the
+   full-page version used in the source-settings modal. */
+.source-row .advanced-toggle {
+  padding: 8px 2px;
+  margin-top: 0;
+  border-top: none;
+  font-size: 12px;
+}
+
+.source-row .advanced-body.open .setting-row {
+  padding: 8px 2px 12px;
+}
+
+.add-row-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1.5px dashed var(--line2);
+  background: transparent;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 700;
+  transition:
+    border-color var(--t),
+    color var(--t),
+    background var(--t);
+}
+
+.add-row-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: rgba(92, 167, 255, 0.06);
+}
+
+.add-row-btn:active {
+  transform: scale(0.99);
+}

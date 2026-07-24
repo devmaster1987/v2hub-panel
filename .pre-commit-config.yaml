@@ -1,0 +1,48 @@
+repos:
+  # Общая гигиена файлов
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: mixed-line-ending
+
+  # Ruff
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.0
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  # Mypy
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v2.3.0
+    hooks:
+      - id: mypy
+        files: ^src/
+        additional_dependencies:
+          - fastapi>=0.115
+          - httpx>=0.28
+          - pydantic>=2.0
+          - pydantic-settings>=2.0
+          - prometheus-fastapi-instrumentator>=7.0
+          - Pillow>=11.0
+          - qrcode>=8.0
+          - v2hub>=1.0.8
+          - typing_extensions
+          - types-qrcode>=8.2.0.20260518
+        args: [--ignore-missing-imports]
+
+  # Pytest
+  - repo: local
+    hooks:
+      - id: pytest
+        name: pytest
+        entry: pytest
+        language: system
+        pass_filenames: false

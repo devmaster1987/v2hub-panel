@@ -1,0 +1,342 @@
+/**
+ * UI Components
+ */
+
+/* Buttons */
+.icon-btn,
+.btn,
+.tab,
+.copy-btn,
+.mini-btn,
+.modal-close {
+  transition:
+    transform var(--t),
+    background var(--t),
+    border-color var(--t),
+    color var(--t),
+    opacity var(--t),
+    box-shadow var(--t);
+}
+
+.icon-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+}
+
+.icon-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--line2);
+  transform: translateY(-1px);
+}
+
+.icon-btn.primary {
+  background: linear-gradient(
+    135deg,
+    rgba(92, 167, 255, 0.22),
+    rgba(55, 192, 242, 0.16)
+  );
+  border-color: rgba(92, 167, 255, 0.22);
+}
+
+.btn {
+  height: 46px;
+  padding: 0 16px;
+  border-radius: 15px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn:active,
+.icon-btn:active,
+.tab:active,
+.mini-btn:active,
+.copy-btn:active,
+.modal-close:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #5ca7ff, #37c0f2);
+  color: white;
+  box-shadow: 0 12px 28px rgba(55, 192, 242, 0.18);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--line);
+  color: var(--text);
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: var(--line2);
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--muted);
+}
+
+.btn-danger {
+  background: rgba(251, 113, 133, 0.12);
+  border-color: rgba(251, 113, 133, 0.18);
+  color: #ffd7df;
+}
+
+.btn-full {
+  width: 100%;
+  justify-content: center;
+}
+
+.mini-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted);
+  display: grid;
+  place-items: center;
+}
+
+.mini-btn:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  border-color: var(--line);
+}
+
+.copy-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 13px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+  display: grid;
+  place-items: center;
+}
+
+.copy-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--line2);
+}
+
+/* Input fields */
+.input-field {
+  width: 100%;
+  border-radius: 15px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  padding: 12px 14px;
+  outline: none;
+  transition:
+    border-color var(--t),
+    background var(--t),
+    box-shadow var(--t);
+  resize: none;
+}
+
+.input-field:focus {
+  border-color: rgba(92, 167, 255, 0.45);
+  background: rgba(255, 255, 255, 0.045);
+  box-shadow: 0 0 0 4px rgba(92, 167, 255, 0.1);
+}
+
+.input-field::placeholder {
+  color: #7488a0;
+}
+
+.input-group {
+  margin-bottom: 15px;
+}
+
+.input-label {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.input-hint {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--hint);
+}
+
+.input-hint-link {
+  display: inline-block;
+  text-decoration: none;
+  color: var(--muted);
+  transition: color var(--t);
+  font-size: 10px;
+}
+
+.input-hint-link:hover {
+  color: var(--accent, #5ca7ff);
+}
+
+/* Pills and badges */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted);
+  font-size: 12px;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted);
+  font-size: 12px;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.badge-type {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 7px 9px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  min-width: 56px;
+  max-width: 100%;
+  text-align: center;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.badge-config {
+  background: rgba(74, 222, 128, 0.12);
+  color: #86efac;
+  border-color: rgba(74, 222, 128, 0.14);
+}
+
+.badge-url {
+  background: rgba(251, 191, 36, 0.12);
+  color: #fde68a;
+  border-color: rgba(251, 191, 36, 0.14);
+}
+
+.badge-token {
+  background: rgba(92, 167, 255, 0.12);
+  color: #bfdbfe;
+  border-color: rgba(92, 167, 255, 0.14);
+}
+
+/* Cards */
+.connect-banner {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* ===========================
+   Fixed API URL badge
+   =========================== */
+
+.fixed-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #a78bfa;
+  background: rgba(167, 139, 250, 0.1);
+  border: 1px solid rgba(167, 139, 250, 0.22);
+  border-radius: 6px;
+  padding: 2px 6px;
+  vertical-align: middle;
+  margin-left: 6px;
+}
+
+.fixed-badge::before {
+  content: "🔒";
+  font-size: 9px;
+}
+
+.fixed-badge.hidden {
+  display: none;
+}
+
+/* Read-only input when URL is server-fixed */
+.input-fixed {
+  opacity: 0.7;
+  cursor: not-allowed;
+  background: rgba(255, 255, 255, 0.02) !important;
+  color: var(--muted) !important;
+  user-select: text; /* still selectable/copyable */
+}
+
+/* Topbar connect button — green dot when connected */
+.icon-btn.primary.is-connected {
+  color: var(--success);
+  border-color: rgba(74, 222, 128, 0.25);
+  background: rgba(74, 222, 128, 0.08);
+}
+
+/* ===========================
+   Source visibility (eye) toggle
+   =========================== */
+
+/* Positioned between the type badge and the refresh/ctx action buttons */
+.mini-btn.eye-btn.is-hidden-on {
+  color: var(--warning);
+  border-color: rgba(251, 191, 36, 0.25);
+  background: rgba(251, 191, 36, 0.08);
+}
+
+.mini-btn.eye-btn.is-hidden-on:hover {
+  color: #fcd34d;
+  background: rgba(251, 191, 36, 0.14);
+}
+
+/* Dim the whole row a touch when a source is hidden from end users,
+   so it reads as "present but not shown" at a glance in the list. */
+.source-item.is-source-hidden {
+  opacity: 0.72;
+}
+
+.source-item.is-source-hidden .source-data {
+  color: var(--muted);
+}

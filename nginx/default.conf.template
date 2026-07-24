@@ -1,0 +1,246 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# V2Hub Panel — nginx production template
+#
+# Required environment:
+#   DOMAIN
+#   BACKEND_HOST
+#   BACKEND_PORT
+#   GRAFANA_HOST
+#   GRAFANA_PORT
+#
+# nginx Docker image automatically renders this template via envsubst:
+# /etc/nginx/templates/*.template
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+upstream v2hub_backend {
+    server ${BACKEND_HOST}:${BACKEND_PORT};
+    keepalive 32;
+}
+
+
+# Rate limits
+limit_req_zone $binary_remote_addr zone=api:10m rate=5r/s;
+limit_req_zone $binary_remote_addr zone=sub:10m rate=3r/s;
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# HTTP → HTTPS
+# ─────────────────────────────────────────────────────────────────────────────
+
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name ${DOMAIN} www.${DOMAIN};
+
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# HTTPS
+# ─────────────────────────────────────────────────────────────────────────────
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+
+    http2 on;
+
+    server_name ${DOMAIN} www.${DOMAIN};
+
+
+    # TLS certificates managed by Certbot
+
+    ssl_certificate
+        /etc/letsencrypt/live/${DOMAIN}/fullchain.pem;
+
+    ssl_certificate_key
+        /etc/letsencrypt/live/${DOMAIN}/privkey.pem;
+
+
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 1d;
+    ssl_session_tickets off;
+
+
+    # Security headers
+
+    add_header Strict-Transport-Security
+        "max-age=63072000; includeSubDomains"
+        always;
+
+    add_header X-Frame-Options
+        "SAMEORIGIN"
+        always;
+
+    add_header X-Content-Type-Options
+        "nosniff"
+        always;
+
+    add_header Referrer-Policy
+        "strict-origin"
+        always;
+
+
+
+    # Compression
+
+    gzip on;
+    gzip_comp_level 5;
+    gzip_min_length 1024;
+    gzip_vary on;
+
+    gzip_types
+        text/plain
+        text/css
+        application/javascript
+        application/json
+        image/svg+xml;
+
+
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Public subscriptions
+    # ─────────────────────────────────────────────────────────────────────────
+
+    location /sub/ {
+
+        limit_req zone=sub burst=10 nodelay;
+        limit_req_status 429;
+
+
+        proxy_pass http://v2hub_backend;
+
+        include /etc/nginx/proxy_params;
+    }
+
+
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # API
+    # ─────────────────────────────────────────────────────────────────────────
+
+    location /api/ {
+
+        limit_req zone=api burst=20 nodelay;
+        limit_req_status 429;
+
+
+        proxy_pass http://v2hub_backend;
+
+        include /etc/nginx/proxy_params;
+    }
+
+
+
+    # Health check
+
+    location = /api/health {
+
+        access_log off;
+
+
+        proxy_pass http://v2hub_backend;
+
+        include /etc/nginx/proxy_params;
+    }
+
+
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Frontend SPA + FastAPI fallback
+    # ─────────────────────────────────────────────────────────────────────────
+
+    location / {
+
+        limit_req zone=api burst=20 nodelay;
+        limit_req_status 429;
+
+
+        proxy_pass http://v2hub_backend;
+
+        include /etc/nginx/proxy_params;
+    }
+
+
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Prometheus
+    # ─────────────────────────────────────────────────────────────────────────
+
+    location /metrics {
+
+        deny all;
+    }
+
+
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Grafana
+    # ─────────────────────────────────────────────────────────────────────────
+
+    location /grafana/ {
+
+        auth_basic "Monitoring";
+
+        auth_basic_user_file /etc/nginx/grafana.htpasswd;
+
+
+        proxy_pass http://${GRAFANA_HOST}:${GRAFANA_PORT};
+
+
+        proxy_set_header Host $host;
+
+        proxy_set_header X-Real-IP $remote_addr;
+
+        proxy_set_header X-Forwarded-For
+            $proxy_add_x_forwarded_for;
+
+        proxy_set_header X-Forwarded-Proto
+            $scheme;
+
+
+        proxy_http_version 1.1;
+
+        proxy_set_header Upgrade
+            $http_upgrade;
+
+        proxy_set_header Connection
+            "upgrade";
+
+
+        proxy_redirect
+            http://${GRAFANA_HOST}:${GRAFANA_PORT}/
+            /grafana/;
+    }
+
+
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Rate limit response
+    # ─────────────────────────────────────────────────────────────────────────
+
+    error_page 429 @too_many;
+
+
+    location @too_many {
+
+        default_type application/json;
+
+        return 429
+            '{"detail":"Too many requests. Please slow down."}';
+    }
+}
