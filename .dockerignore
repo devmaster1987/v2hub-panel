@@ -1,0 +1,39 @@
+# Version control
+.git
+.gitignore
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Certificates
+certbot/conf/
+certbot/www/
+nginx/*.htpasswd
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/coverage/
+
+# CI / tooling
+.github/
+.pre-commit-config.yaml
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Docs
+LICENSE
