@@ -70,6 +70,9 @@ jobs:
             echo "Recreating containers..."
             docker compose up -d --build
 
+            echo "Restarting nginx to refresh upstream DNS resolution..."
+            docker compose restart nginx
+
             echo "Cleaning up dangling images and build cache..."
             docker image prune -f
             docker builder prune -f
@@ -93,7 +96,7 @@ jobs:
             success=0
 
             for i in $(seq 1 "$attempts"); do
-              status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/api/health || echo "000")
+              status=$(curl -sk -o /dev/null -w "%{http_code}" -L https://localhost/api/health || echo "000")
               echo "Attempt $i/$attempts: HTTP $status"
               if [ "$status" = "200" ]; then
                 success=1
