@@ -153,10 +153,16 @@ export function createSourceListEditor(containerId) {
     `;
 
     const stepper = createElement("div", { class: "depth-stepper" });
-    const minusBtn = createElement("button", { class: "depth-stepper-btn", type: "button" });
+    const minusBtn = createElement("button", {
+      class: "depth-stepper-btn",
+      type: "button",
+    });
     minusBtn.textContent = "−";
     const valueEl = createElement("span", { class: "depth-stepper-value" });
-    const plusBtn = createElement("button", { class: "depth-stepper-btn", type: "button" });
+    const plusBtn = createElement("button", {
+      class: "depth-stepper-btn",
+      type: "button",
+    });
     plusBtn.textContent = "+";
 
     function syncStepper() {
@@ -184,7 +190,9 @@ export function createSourceListEditor(containerId) {
   }
 
   function focusRow(row) {
-    const el = container()?.querySelector(`[data-row-id="${row._rowId}"] .source-row-input`);
+    const el = container()?.querySelector(
+      `[data-row-id="${row._rowId}"] .source-row-input`,
+    );
     el?.focus();
   }
 

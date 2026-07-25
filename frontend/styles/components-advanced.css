@@ -40,7 +40,11 @@
 }
 
 .tab.active {
-  background: linear-gradient(135deg, rgba(92, 167, 255, 0.18), rgba(55, 192, 242, 0.1));
+  background: linear-gradient(
+    135deg,
+    rgba(92, 167, 255, 0.18),
+    rgba(55, 192, 242, 0.1)
+  );
   border-color: rgba(92, 167, 255, 0.24);
   color: #fff;
 }
@@ -61,14 +65,22 @@
 /* Subscription cards */
 .sub-card {
   border: 1px solid var(--line);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.015));
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.03),
+    rgba(255, 255, 255, 0.015)
+  );
   border-radius: var(--radius-lg);
   padding: 14px;
   display: flex;
   align-items: center;
   gap: 12px;
   cursor: pointer;
-  transition: transform var(--t), border-color var(--t), background var(--t), box-shadow var(--t);
+  transition:
+    transform var(--t),
+    border-color var(--t),
+    background var(--t),
+    box-shadow var(--t);
   position: relative;
   overflow: hidden;
   text-align: left;
@@ -78,7 +90,11 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(600px 120px at 0% 0%, rgba(92, 167, 255, 0.1), transparent 56%);
+  background: radial-gradient(
+    600px 120px at 0% 0%,
+    rgba(92, 167, 255, 0.1),
+    transparent 56%
+  );
   opacity: 0;
   transition: opacity var(--t);
   pointer-events: none;
@@ -87,7 +103,11 @@
 .sub-card:hover {
   transform: translateY(-2px);
   border-color: rgba(92, 167, 255, 0.22);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.05),
+    rgba(255, 255, 255, 0.02)
+  );
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.2);
 }
 
@@ -213,7 +233,11 @@
   border-radius: 18px;
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.03);
-  transition: border-color var(--t), background var(--t), transform var(--t), opacity var(--t);
+  transition:
+    border-color var(--t),
+    background var(--t),
+    transform var(--t),
+    opacity var(--t);
 }
 
 .source-item:hover {
@@ -252,7 +276,9 @@
 .source-data {
   color: var(--text);
   font-size: 13px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    monospace;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -288,7 +314,10 @@
   gap: 12px;
   align-items: center;
   cursor: pointer;
-  transition: border-color var(--t), transform var(--t), background var(--t);
+  transition:
+    border-color var(--t),
+    transform var(--t),
+    background var(--t);
 }
 
 .source-type-item:hover {
@@ -357,7 +386,9 @@
   border-radius: 18px;
   background: rgba(7, 13, 24, 0.52);
   padding: 14px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    monospace;
   font-size: 12px;
   color: #c7d4e7;
   max-height: 260px;
@@ -457,7 +488,9 @@
   min-width: 0;
   max-width: 100%;
   color: #dbeafe;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    monospace;
   font-size: 13px;
   white-space: nowrap;
   /* Scroll within the box — the box clips, the value scrolls */
@@ -665,7 +698,11 @@ body.save-bar-open {
 }
 
 .toggle-switch.on {
-  background: linear-gradient(135deg, rgba(92, 167, 255, 0.32), rgba(55, 192, 242, 0.24));
+  background: linear-gradient(
+    135deg,
+    rgba(92, 167, 255, 0.32),
+    rgba(55, 192, 242, 0.24)
+  );
   border-color: rgba(92, 167, 255, 0.35);
 }
 

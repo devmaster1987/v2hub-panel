@@ -70,7 +70,8 @@ async function request(path, { method = "GET", headers = {}, body } = {}) {
   }
 
   if (!response.ok) {
-    const raw = data?.detail ?? data?.message ?? data?.error ?? response.statusText;
+    const raw =
+      data?.detail ?? data?.message ?? data?.error ?? response.statusText;
 
     // detail can be a nested object like { error, message, details }
     let message;
@@ -141,17 +142,23 @@ export async function deleteSubscription(token) {
 }
 
 export async function addSources(token, sources) {
-  return request(`/api/subscriptions/${encodeURIComponent(token)}/sources/add`, {
-    method: "POST",
-    body: makeJsonBody({ sources }),
-  });
+  return request(
+    `/api/subscriptions/${encodeURIComponent(token)}/sources/add`,
+    {
+      method: "POST",
+      body: makeJsonBody({ sources }),
+    },
+  );
 }
 
 export async function replaceSources(token, sources) {
-  return request(`/api/subscriptions/${encodeURIComponent(token)}/sources/replace`, {
-    method: "POST",
-    body: makeJsonBody({ sources }),
-  });
+  return request(
+    `/api/subscriptions/${encodeURIComponent(token)}/sources/replace`,
+    {
+      method: "POST",
+      body: makeJsonBody({ sources }),
+    },
+  );
 }
 
 // ---------------------------------------------------------------------------

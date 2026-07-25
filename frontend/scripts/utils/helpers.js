@@ -110,7 +110,10 @@ export function detectSourceType(raw, baseUrl) {
   const lower = s.toLowerCase();
 
   if (lower.startsWith("http://") || lower.startsWith("https://")) {
-    const normalizedBase = (baseUrl || "").trim().replace(/\/+$/, "").toLowerCase();
+    const normalizedBase = (baseUrl || "")
+      .trim()
+      .replace(/\/+$/, "")
+      .toLowerCase();
     if (normalizedBase && lower.startsWith(normalizedBase)) {
       return "internal_token";
     }
@@ -145,8 +148,11 @@ export function sourceValue(entry) {
  * @returns {number}
  */
 export function clampDepth(value) {
+  if (value === null) return null;
+
   const n = Number(value);
   if (!Number.isFinite(n)) return 3;
+
   return Math.max(0, Math.min(3, Math.round(n)));
 }
 
@@ -269,7 +275,10 @@ export function validateBaseUrl(url) {
   const trimmed = url.trim();
 
   // Только HTTPS (кроме localhost для dev-окружения)
-  if (!trimmed.startsWith("https://") && !trimmed.startsWith("http://localhost")) {
+  if (
+    !trimmed.startsWith("https://") &&
+    !trimmed.startsWith("http://localhost")
+  ) {
     return { ok: false, error: "API URL должен начинаться с https://." };
   }
 
@@ -287,16 +296,16 @@ export function validateBaseUrl(url) {
     /^127\./,
     /^0\.0\.0\.0$/,
     /^::1$/,
-    /^169\.254\./,          // link-local (AWS metadata etc.)
-    /^10\./,                // RFC-1918
-    /^172\.(1[6-9]|2\d|3[01])\./,  // RFC-1918
-    /^192\.168\./,          // RFC-1918
-    /^fc00:/i,              // IPv6 ULA
-    /^fe80:/i,              // IPv6 link-local
+    /^169\.254\./, // link-local (AWS metadata etc.)
+    /^10\./, // RFC-1918
+    /^172\.(1[6-9]|2\d|3[01])\./, // RFC-1918
+    /^192\.168\./, // RFC-1918
+    /^fc00:/i, // IPv6 ULA
+    /^fe80:/i, // IPv6 link-local
   ];
 
   // localhost разрешён только без https (для dev)
-  if (hostname !== "localhost" && hostname !== "127.0.0.1") {
+  if (hostname !== "localhost") {
     for (const pattern of blocked) {
       if (pattern.test(hostname)) {
         return { ok: false, error: "Недопустимый адрес сервера." };
@@ -305,8 +314,14 @@ export function validateBaseUrl(url) {
   }
 
   // Запрет на file://, ftp:// и прочие схемы (уже отсеяны выше, но на всякий случай)
-  if (parsed.protocol !== "https:" && !(parsed.protocol === "http:" && hostname === "localhost")) {
-    return { ok: false, error: "Недопустимая схема URL. Используйте https://." };
+  if (
+    parsed.protocol !== "https:" &&
+    !(parsed.protocol === "http:" && hostname === "localhost")
+  ) {
+    return {
+      ok: false,
+      error: "Недопустимая схема URL. Используйте https://.",
+    };
   }
 
   return { ok: true };

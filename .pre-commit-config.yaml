@@ -7,9 +7,16 @@ repos:
       - id: end-of-file-fixer
       - id: check-yaml
       - id: check-toml
+      - id: check-json
       - id: check-added-large-files
+        args: [--maxkb=1024]
       - id: check-merge-conflict
       - id: mixed-line-ending
+      - id: check-case-conflict
+      - id: check-symlinks
+      - id: destroyed-symlinks
+      - id: detect-private-key
+      - id: check-executables-have-shebangs
 
   # Ruff
   - repo: https://github.com/astral-sh/ruff-pre-commit
@@ -38,6 +45,92 @@ repos:
           - types-qrcode>=8.2.0.20260518
         args: [--ignore-missing-imports]
 
+  # Secrets scanning — не дать .env/ключам утечь в коммит
+  # Пинованный бинарник gitleaks, скачивается с GitHub Releases.
+  # Не зависит ни от Go, ни от Docker, ни от того, что уже стоит в системе —
+  # одинаково работает и локально, и на чистом GitHub Actions runner.
+  - repo: local
+    hooks:
+      - id: gitleaks
+        name: gitleaks (secrets scan)
+        language: system
+        pass_filenames: false
+        entry: >
+          bash -c '
+          set -euo pipefail;
+          GITLEAKS_VERSION=8.24.0;
+          BIN_DIR="$HOME/.cache/gitleaks-bin/$GITLEAKS_VERSION";
+          BIN="$BIN_DIR/gitleaks";
+          if [ ! -x "$BIN" ]; then
+            mkdir -p "$BIN_DIR";
+            OS=$(uname -s | tr "[:upper:]" "[:lower:]");
+            ARCH=$(uname -m);
+            case "$ARCH" in x86_64) ARCH=x64 ;; aarch64|arm64) ARCH=arm64 ;; esac;
+            URL="https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_${OS}_${ARCH}.tar.gz";
+            curl -sSfL "$URL" -o "$BIN_DIR/gitleaks.tar.gz";
+            tar -xzf "$BIN_DIR/gitleaks.tar.gz" -C "$BIN_DIR" gitleaks;
+            chmod +x "$BIN";
+          fi;
+          "$BIN" detect --source=. --no-git -v'
+
+  # Dockerfile lint — пинованный бинарник, скачивается с GitHub Releases,
+  # тот же надёжный паттерн, что и для gitleaks.
+  - repo: local
+    hooks:
+      - id: hadolint
+        name: hadolint (Dockerfile lint)
+        language: system
+        pass_filenames: true
+        files: Dockerfile.*|.*\.Dockerfile$|^Dockerfile$
+        entry: >
+          bash -c '
+          set -euo pipefail;
+          HADOLINT_VERSION=2.12.0;
+          BIN_DIR="$HOME/.cache/hadolint-bin/$HADOLINT_VERSION";
+          BIN="$BIN_DIR/hadolint";
+          if [ ! -x "$BIN" ]; then
+            mkdir -p "$BIN_DIR";
+            OS=$(uname -s);
+            ARCH=$(uname -m);
+            case "$ARCH" in x86_64) ARCH=x86_64 ;; aarch64|arm64) ARCH=arm64 ;; esac;
+            URL="https://github.com/hadolint/hadolint/releases/download/v${HADOLINT_VERSION}/hadolint-${OS}-${ARCH}";
+            curl -sSfL "$URL" -o "$BIN";
+            chmod +x "$BIN";
+          fi;
+          "$BIN" --ignore DL3008 --ignore DL3013 "$@"' --
+
+  # Shell-скрипты (используются внутри deploy.yml через heredoc, но полезно
+  # держать хук на случай появления отдельных .sh файлов)
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.10.0.1
+    hooks:
+      - id: shellcheck
+
+  # GitHub Actions workflows lint
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.7
+    hooks:
+      - id: actionlint
+
+  # Frontend — форматирование JS/CSS/HTML, если фронтенд присутствует
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v4.0.0-alpha.8
+    hooks:
+      - id: prettier
+        files: ^frontend/
+        types_or: [javascript, css, html, json]
+
+  # Проверка, что package-lock.json синхронизирован с package.json —
+  # чтобы `npm ci` в CI не падал из-за рассинхрона.
+  - repo: local
+    hooks:
+      - id: npm-lockfile-sync
+        name: npm lockfile sync check (frontend)
+        language: system
+        pass_filenames: false
+        files: ^frontend/(package\.json|package-lock\.json)$
+        entry: bash -c 'cd frontend && npm install --package-lock-only && git diff --exit-code package-lock.json'
+
   # Pytest
   - repo: local
     hooks:
@@ -46,3 +139,14 @@ repos:
         entry: pytest
         language: system
         pass_filenames: false
+        types: [python]
+
+  # Vitest — фронтенд-тесты, чтобы падения ловились локально, а не только в CI
+  - repo: local
+    hooks:
+      - id: vitest
+        name: vitest (frontend tests)
+        language: system
+        pass_filenames: false
+        files: ^frontend/
+        entry: bash -c 'cd frontend && npm test -- --run'

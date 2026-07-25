@@ -37,7 +37,11 @@ export const state = {
 };
 
 export function updateConnection(connection) {
-  state.connection = connection || { connected: false, base_url: null, connected_at: null };
+  state.connection = connection || {
+    connected: false,
+    base_url: null,
+    connected_at: null,
+  };
 }
 
 export function updateSubscriptions(subscriptions) {
@@ -45,7 +49,9 @@ export function updateSubscriptions(subscriptions) {
 }
 
 export function getCurrentSubscription() {
-  return state.subscriptions.find((s) => s.token === state.currentSubToken) || null;
+  return (
+    state.subscriptions.find((s) => s.token === state.currentSubToken) || null
+  );
 }
 
 export function setCurrentSubscription(token, sources) {
@@ -69,8 +75,12 @@ export function normalizeDraftOrder() {
   state.draft.forEach((s, i) => (s.order_index = i));
 }
 
-export function markSaved() { state.hasUnsavedChanges = false; }
-export function markChanged() { state.hasUnsavedChanges = true; }
+export function markSaved() {
+  state.hasUnsavedChanges = false;
+}
+export function markChanged() {
+  state.hasUnsavedChanges = true;
+}
 
 export function resetCurrentSubscription() {
   state.currentSubToken = null;
@@ -80,19 +90,31 @@ export function resetCurrentSubscription() {
   state.currentTab = "sources";
 }
 
-export function switchTab(tab) { state.currentTab = tab; }
-export function setLoadingList(loading) { state.loadingList = loading; }
-export function setLoadingEditor(loading) { state.loadingEditor = loading; }
+export function switchTab(tab) {
+  state.currentTab = tab;
+}
+export function setLoadingList(loading) {
+  state.loadingList = loading;
+}
+export function setLoadingEditor(loading) {
+  state.loadingEditor = loading;
+}
 
 export function getStats() {
   return {
     totalSubscriptions: state.subscriptions.length,
     totalSources: state.subscriptions.reduce(
-      (sum, sub) => sum + Number((sub.sources_count ?? (sub.sources ? sub.sources.length : 0)) || 0),
-      0
+      (sum, sub) =>
+        sum +
+        Number(
+          (sub.sources_count ?? (sub.sources ? sub.sources.length : 0)) || 0,
+        ),
+      0,
     ),
     readySubscriptions: state.subscriptions.filter(
-      (s) => Number((s.sources_count ?? (s.sources ? s.sources.length : 0)) || 0) > 0
+      (s) =>
+        Number((s.sources_count ?? (s.sources ? s.sources.length : 0)) || 0) >
+        0,
     ).length,
   };
 }

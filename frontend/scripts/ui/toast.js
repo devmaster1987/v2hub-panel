@@ -48,16 +48,26 @@ function normalizeApiPayload(payload) {
     detail &&
     typeof detail === "object" &&
     !Array.isArray(detail) &&
-    ("error" in detail || "error_code" in detail || "code" in detail || "type" in detail)
+    ("error" in detail ||
+      "error_code" in detail ||
+      "code" in detail ||
+      "type" in detail)
   ) {
     return detail;
   }
 
-  if ("error" in payload || "error_code" in payload || "code" in payload || "type" in payload) {
+  if (
+    "error" in payload ||
+    "error_code" in payload ||
+    "code" in payload ||
+    "type" in payload
+  ) {
     return payload;
   }
 
-  return payload.detail && typeof payload.detail === "object" ? payload.detail : payload;
+  return payload.detail && typeof payload.detail === "object"
+    ? payload.detail
+    : payload;
 }
 
 /**
@@ -105,10 +115,7 @@ function parseErrorStructure(error) {
 
     // приоритет: response.data > detail > data
     const responseData =
-      error.response?.data ??
-      error.data ??
-      error.detail ??
-      null;
+      error.response?.data ?? error.data ?? error.detail ?? null;
 
     if (typeof responseData === "string") {
       const parsed = tryParseJson(responseData);
@@ -195,7 +202,10 @@ function knownErrorCode(code, errorDetail = {}) {
     // ── Валидация ─────────────────────────────────────────────────────────
     case "invalid_config": {
       const field = d.field ? ` (поле: ${d.field})` : "";
-      const errors = Array.isArray(d.errors) && d.errors.length ? `: ${d.errors.join(", ")}` : "";
+      const errors =
+        Array.isArray(d.errors) && d.errors.length
+          ? `: ${d.errors.join(", ")}`
+          : "";
       return `Некорректная конфигурация${field}${errors}. Проверьте введённые данные.`;
     }
 
@@ -315,11 +325,7 @@ function classifyError(statusCode, detail, humanMessage) {
   const msg = (humanMessage || "").toLowerCase();
 
   const errorCode = String(
-    detail?.error ||
-      detail?.error_code ||
-      detail?.code ||
-      detail?.type ||
-      ""
+    detail?.error || detail?.error_code || detail?.code || detail?.type || "",
   ).toLowerCase();
 
   // ── Лимиты: всегда первыми ─────────────────────────────────────────────
@@ -513,7 +519,7 @@ export function showError(error, duration = 5000) {
   const { title, hint, icon, iconClass } = classifyError(
     statusCode,
     detail,
-    humanMessage
+    humanMessage,
   );
 
   const notification = $("error-notification");
@@ -540,7 +546,7 @@ export function showError(error, duration = 5000) {
   clearTimeout(errorTimer);
   errorTimer = setTimeout(
     () => notification.classList.remove("show"),
-    duration
+    duration,
   );
 }
 

@@ -4,8 +4,22 @@
 
 import * as API from "../api.js";
 import * as State from "../state.js";
-import { $, setValue, getValue, clearChildren, addClass, removeClass } from "../utils/dom.js";
-import { escapeHtml, inferBadgeClass, formatSource, extractComment, clampDepth, detectSourceType } from "../utils/helpers.js";
+import {
+  $,
+  setValue,
+  getValue,
+  clearChildren,
+  addClass,
+  removeClass,
+} from "../utils/dom.js";
+import {
+  escapeHtml,
+  inferBadgeClass,
+  formatSource,
+  extractComment,
+  clampDepth,
+  detectSourceType,
+} from "../utils/helpers.js";
 import { createSourceListEditor } from "../utils/source-list-editor.js";
 import { showToast, showError } from "./toast.js";
 import { openModal, closeModal } from "./modals.js";
@@ -91,9 +105,13 @@ export function renderSources() {
         >
           ${src.is_hidden ? "🙈" : "👁"}
         </button>
-        ${src.source_type !== "config" ? `
+        ${
+          src.source_type !== "config"
+            ? `
           <button class="mini-btn refresh-btn" type="button" title="Обновить">↻</button>
-        ` : ""}
+        `
+            : ""
+        }
         <button class="mini-btn ctx-btn" type="button" title="Меню">⋯</button>
       </div>
     `;
@@ -131,12 +149,16 @@ function setupDragHandlers(item, idx) {
 
   item.addEventListener("dragend", () => {
     item.classList.remove("dragging");
-    document.querySelectorAll(".source-item").forEach((el) => el.classList.remove("drag-over"));
+    document
+      .querySelectorAll(".source-item")
+      .forEach((el) => el.classList.remove("drag-over"));
   });
 
   item.addEventListener("dragover", (e) => {
     e.preventDefault();
-    document.querySelectorAll(".source-item").forEach((el) => el.classList.remove("drag-over"));
+    document
+      .querySelectorAll(".source-item")
+      .forEach((el) => el.classList.remove("drag-over"));
     item.classList.add("drag-over");
   });
 
@@ -159,24 +181,32 @@ function setupDragHandlers(item, idx) {
   let touchFromIdx = null;
   let touchItem = null;
 
-  handle.addEventListener("touchstart", (e) => {
-    touchFromIdx = idx;
-    touchItem = item;
-    item.classList.add("dragging");
-    e.preventDefault();
-  }, { passive: false });
+  handle.addEventListener(
+    "touchstart",
+    (e) => {
+      touchFromIdx = idx;
+      touchItem = item;
+      item.classList.add("dragging");
+      e.preventDefault();
+    },
+    { passive: false },
+  );
 
-  handle.addEventListener("touchmove", (e) => {
-    e.preventDefault();
-    const y = e.touches[0].clientY;
-    const els = [...document.querySelectorAll(".source-item")];
-    els.forEach((el) => el.classList.remove("drag-over"));
-    const target = els.find((el) => {
-      const r = el.getBoundingClientRect();
-      return y >= r.top && y <= r.bottom;
-    });
-    if (target && target !== touchItem) target.classList.add("drag-over");
-  }, { passive: false });
+  handle.addEventListener(
+    "touchmove",
+    (e) => {
+      e.preventDefault();
+      const y = e.touches[0].clientY;
+      const els = [...document.querySelectorAll(".source-item")];
+      els.forEach((el) => el.classList.remove("drag-over"));
+      const target = els.find((el) => {
+        const r = el.getBoundingClientRect();
+        return y >= r.top && y <= r.bottom;
+      });
+      if (target && target !== touchItem) target.classList.add("drag-over");
+    },
+    { passive: false },
+  );
 
   handle.addEventListener("touchend", (e) => {
     item.classList.remove("dragging");
@@ -277,7 +307,7 @@ export function addSource() {
     showToast(
       rejected.length === 1
         ? `Не удалось распознать источник: "${rejected[0].slice(0, 40)}"`
-        : `Не удалось распознать ${rejected.length} источник(ов) — проверьте формат`
+        : `Не удалось распознать ${rejected.length} источник(ов) — проверьте формат`,
     );
   }
 
@@ -293,7 +323,7 @@ export function addSource() {
   showToast(
     newEntries.length > 1
       ? `Добавлено ${newEntries.length} источника — не забудьте сохранить`
-      : "Источник добавлен — не забудьте сохранить"
+      : "Источник добавлен — не забудьте сохранить",
   );
 }
 
@@ -316,7 +346,7 @@ export function toggleSourceHidden(e, srcId) {
   showToast(
     arr[idx].is_hidden
       ? "Источник скрыт от пользователей — не забудьте сохранить"
-      : "Источник снова виден — не забудьте сохранить"
+      : "Источник снова виден — не забудьте сохранить",
   );
 }
 
@@ -345,7 +375,7 @@ function _positionCtxMenu() {
 
   const left = Math.min(
     Math.max(12, rect.right - menuWidth),
-    window.innerWidth - menuWidth - 12
+    window.innerWidth - menuWidth - 12,
   );
   menu.style.left = `${left}px`;
 }
@@ -374,7 +404,9 @@ export function openCtxMenu(e, srcId) {
 
   editItem.style.display = "";
   editLabel.textContent =
-    source.source_type === "config" ? "Редактировать конфиг" : "Редактировать подписку";
+    source.source_type === "config"
+      ? "Редактировать конфиг"
+      : "Редактировать подписку";
 
   _ctxAnchorEl = e.currentTarget;
   _positionCtxMenu();
@@ -436,7 +468,7 @@ export function renderPreview() {
   if (!sub) return;
 
   const totalConfigs = Number(
-    sub.sources_count ?? (sub.sources ? sub.sources.length : 0) ?? 0
+    sub.sources_count ?? (sub.sources ? sub.sources.length : 0) ?? 0,
   );
 
   const draftSources = State.getDraftSources();
@@ -464,13 +496,17 @@ export function renderPreview() {
   const previewItems = draftSources.slice(0, 50).map((src) => src.data);
   const previewBox = $("preview-box");
   if (previewBox) {
-    previewBox.innerHTML = (previewItems.length ? previewItems : ["Нет источников"])
-      .map((c, i) => `
+    previewBox.innerHTML = (
+      previewItems.length ? previewItems : ["Нет источников"]
+    )
+      .map(
+        (c, i) => `
         <div class="preview-line">
           <span class="preview-num">${i + 1}</span>
           <span class="preview-text">${escapeHtml(c)}</span>
         </div>
-      `)
+      `,
+      )
       .join("");
   }
 
@@ -522,7 +558,8 @@ async function copyToClipboard(text) {
   try {
     const ta = document.createElement("textarea");
     ta.value = text;
-    ta.style.cssText = "position:fixed;top:-9999px;left:-9999px;opacity:0;pointer-events:none;";
+    ta.style.cssText =
+      "position:fixed;top:-9999px;left:-9999px;opacity:0;pointer-events:none;";
     document.body.appendChild(ta);
     ta.focus();
     ta.select();
@@ -539,7 +576,9 @@ export async function copyExportUrl() {
   const val = (el?.dataset?.full || el?.textContent || "").trim();
   if (!val || val === "—") return;
   const ok = await copyToClipboard(val);
-  showToast(ok ? "Ссылка скопирована" : "Не удалось скопировать — выделите вручную");
+  showToast(
+    ok ? "Ссылка скопирована" : "Не удалось скопировать — выделите вручную",
+  );
 }
 
 export async function copyB64() {
@@ -547,7 +586,9 @@ export async function copyB64() {
   const val = (el?.dataset?.full || el?.textContent || "").trim();
   if (!val || val === "—") return;
   const ok = await copyToClipboard(val);
-  showToast(ok ? "Base64 скопирован" : "Не удалось скопировать — выделите вручную");
+  showToast(
+    ok ? "Base64 скопирован" : "Не удалось скопировать — выделите вручную",
+  );
 }
 
 export async function copySourceFromCtx() {
@@ -556,7 +597,9 @@ export async function copySourceFromCtx() {
   const source = arr.find((s) => s.id === State.state.ctxSourceId);
   if (!source?.data) return;
   const ok = await copyToClipboard(source.data);
-  showToast(ok ? "Источник скопирован" : "Не удалось скопировать — выделите вручную");
+  showToast(
+    ok ? "Источник скопирован" : "Не удалось скопировать — выделите вручную",
+  );
 }
 
 export function downloadBundle() {
@@ -607,7 +650,10 @@ function _positionEditorMenu() {
   const rect = _editorAnchorEl.getBoundingClientRect();
   const menuWidth = 210;
   const MARGIN = 8;
-  const left = Math.min(Math.max(12, rect.right - menuWidth), window.innerWidth - menuWidth - 12);
+  const left = Math.min(
+    Math.max(12, rect.right - menuWidth),
+    window.innerWidth - menuWidth - 12,
+  );
   const MENU_HEIGHT = 120;
   const spaceBelow = window.innerHeight - rect.bottom;
   if (spaceBelow < MENU_HEIGHT + MARGIN) {
@@ -652,7 +698,10 @@ export function openEditorMenu(e) {
   menu.classList.add("open");
   cancelAnimationFrame(_editorRafId);
   _editorRafId = requestAnimationFrame(_trackEditorMenu);
-  setTimeout(() => document.addEventListener("click", _onEditorOutsideClick), 0);
+  setTimeout(
+    () => document.addEventListener("click", _onEditorOutsideClick),
+    0,
+  );
 }
 
 export function closeEditorMenu() {
@@ -684,7 +733,9 @@ export function editSourceCommentFromCtx() {
 
     const titleEl = $("source-settings-title");
     if (titleEl) {
-      titleEl.textContent = isConfig ? "Редактировать конфиг" : "Редактировать подписку";
+      titleEl.textContent = isConfig
+        ? "Редактировать конфиг"
+        : "Редактировать подписку";
     }
 
     const commentGroup = $("source-comment-group");
@@ -692,7 +743,10 @@ export function editSourceCommentFromCtx() {
       commentGroup.style.display = isConfig ? "" : "none";
     }
 
-    setValue($("edit-source-comment"), isConfig ? extractComment(source.data) || "" : "");
+    setValue(
+      $("edit-source-comment"),
+      isConfig ? extractComment(source.data) || "" : "",
+    );
 
     _editingSourceState = {
       is_hidden: Boolean(source.is_hidden),
@@ -749,7 +803,9 @@ function _renderDepthStepper() {
  * set programmatically) are clamped rather than rejected.
  */
 export function stepSourceDepth(delta) {
-  _editingSourceState.max_depth = clampDepth(_editingSourceState.max_depth + delta);
+  _editingSourceState.max_depth = clampDepth(
+    _editingSourceState.max_depth + delta,
+  );
   _renderDepthStepper();
 }
 

@@ -4,8 +4,21 @@
 
 import * as API from "../api.js";
 import * as State from "../state.js";
-import { $, setText, setValue, getValue, clearChildren, createElement } from "../utils/dom.js";
-import { escapeHtml, getAvatarColor, splitLines, clampDepth, detectSourceType } from "../utils/helpers.js";
+import {
+  $,
+  setText,
+  setValue,
+  getValue,
+  clearChildren,
+  createElement,
+} from "../utils/dom.js";
+import {
+  escapeHtml,
+  getAvatarColor,
+  splitLines,
+  clampDepth,
+  detectSourceType,
+} from "../utils/helpers.js";
 import { createSourceListEditor } from "../utils/source-list-editor.js";
 import { showToast, showError } from "./toast.js";
 import { openModal, closeModal } from "./modals.js";
@@ -77,7 +90,7 @@ export function renderSubscriptionsList() {
 
     const letter = ((sub.name || "?")[0] || "?").toUpperCase();
     const sourcesCount = Number(
-      sub.sources_count ?? (sub.sources ? sub.sources.length : 0)
+      sub.sources_count ?? (sub.sources ? sub.sources.length : 0),
     );
 
     card.innerHTML = `
@@ -125,7 +138,7 @@ export async function reloadAll() {
     // Reload current subscription if open
     if (State.state.currentSubToken) {
       const found = State.state.subscriptions.find(
-        (x) => x.token === State.state.currentSubToken
+        (x) => x.token === State.state.currentSubToken,
       );
       if (found) {
         await loadSelectedSubscription(found.token, false);
@@ -143,10 +156,16 @@ export async function reloadAll() {
       State.clearConnectionLocal();
       State.resetCurrentSubscription();
       hideSaveBar();
-      showError(new Error("Токен недействителен или устарел. Введите новый API-токен."));
+      showError(
+        new Error("Токен недействителен или устарел. Введите новый API-токен."),
+      );
       openConnectModal();
     } else if (e.status === 429) {
-      showError(new Error("Слишком много запросов. Подождите немного и попробуйте снова."));
+      showError(
+        new Error(
+          "Слишком много запросов. Подождите немного и попробуйте снова.",
+        ),
+      );
     } else {
       showError(e);
     }
@@ -198,7 +217,9 @@ export async function loadSelectedSubscription(token, switchScreen = true) {
     if (e.status === 401) {
       showError(new Error("Неверный токен. Проверьте API-токен."));
     } else if (e.status === 429) {
-      showError(new Error("Слишком много запросов. Подождите и попробуйте снова."));
+      showError(
+        new Error("Слишком много запросов. Подождите и попробуйте снова."),
+      );
     } else {
       showError(e);
     }
@@ -231,9 +252,7 @@ export function showScreen(id) {
  */
 export function goBack() {
   if (State.state.hasUnsavedChanges) {
-    if (
-      !confirm("У вас есть несохранённые изменения. Выйти без сохранения?")
-    ) {
+    if (!confirm("У вас есть несохранённые изменения. Выйти без сохранения?")) {
       return;
     }
     State.markSaved();
@@ -298,9 +317,12 @@ export async function saveChanges() {
     await loadSelectedSubscription(sub.token, false);
 
     // Update the sources count in the subscriptions list
-    const idx = State.state.subscriptions.findIndex((s) => s.token === sub.token);
+    const idx = State.state.subscriptions.findIndex(
+      (s) => s.token === sub.token,
+    );
     if (idx !== -1) {
-      State.state.subscriptions[idx].sources_count = State.getDraftSources().length;
+      State.state.subscriptions[idx].sources_count =
+        State.getDraftSources().length;
       renderSubscriptionsList();
     }
 
@@ -392,7 +414,7 @@ export async function connectToAPI() {
 
     // FIX [High]: токен сохраняется через State (sessionStorage), не напрямую в localStorage
     if (fixed) {
-      State.saveConnectionLocal(null, apiToken);  // только токен, base_url не трогаем
+      State.saveConnectionLocal(null, apiToken); // только токен, base_url не трогаем
     } else {
       State.saveConnectionLocal(baseUrl, apiToken);
     }
@@ -488,7 +510,7 @@ export async function createSubscription() {
       showToast(
         rejected.length === 1
           ? `Не удалось распознать источник: "${rejected[0].slice(0, 40)}"`
-          : `Не удалось распознать ${rejected.length} источник(ов) — проверьте формат`
+          : `Не удалось распознать ${rejected.length} источник(ов) — проверьте формат`,
       );
     }
 
@@ -546,7 +568,7 @@ export async function saveSubEdit() {
 
     // Update in state
     const idx = State.state.subscriptions.findIndex(
-      (s) => s.token === sub.token
+      (s) => s.token === sub.token,
     );
     if (idx !== -1) {
       State.state.subscriptions[idx] = updated;
@@ -560,7 +582,7 @@ export async function saveSubEdit() {
   } catch (e) {
     if (String(e.message || "").includes("not supported")) {
       showToast(
-        "Редактирование названия не поддерживается этим клиентом v2hub"
+        "Редактирование названия не поддерживается этим клиентом v2hub",
       );
     } else {
       showError(e);
@@ -575,9 +597,7 @@ export async function deleteSubConfirm() {
   const sub = State.getCurrentSubscription();
   if (!sub) return;
 
-  if (
-    !confirm(`Удалить подписку «${sub.name}»? Это действие необратимо.`)
-  ) {
+  if (!confirm(`Удалить подписку «${sub.name}»? Это действие необратимо.`)) {
     return;
   }
 

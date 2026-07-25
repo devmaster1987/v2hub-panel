@@ -19,7 +19,7 @@ const BASE = "https://v2hub.link";
 describe("escapeHtml", () => {
   it("escapes all special characters", () => {
     expect(escapeHtml(`<script>"'&</script>`)).toBe(
-      "&lt;script&gt;&quot;&#39;&amp;&lt;/script&gt;"
+      "&lt;script&gt;&quot;&#39;&amp;&lt;/script&gt;",
     );
   });
 
@@ -73,7 +73,9 @@ describe("detectSourceType (strict, for fresh user input)", () => {
   });
 
   it("unknown-but-well-formed schemes are ALSO config (no hardcoded whitelist)", () => {
-    expect(detectSourceType("hysteria2://pass@host:8443?sni=x#name")).toBe("config");
+    expect(detectSourceType("hysteria2://pass@host:8443?sni=x#name")).toBe(
+      "config",
+    );
     expect(detectSourceType("tuic://uuid:pass@host:443")).toBe("config");
     expect(detectSourceType("wireguard://key@host:51820")).toBe("config");
     expect(detectSourceType("ftp://example.com/file")).toBe("config");
@@ -89,7 +91,9 @@ describe("detectSourceType (strict, for fresh user input)", () => {
   });
 
   it("http(s) not matching base_url is external_url", () => {
-    expect(detectSourceType("https://provider.com/sub/xyz", BASE)).toBe("external_url");
+    expect(detectSourceType("https://provider.com/sub/xyz", BASE)).toBe(
+      "external_url",
+    );
   });
 
   it("http(s) with no base_url given is external_url (can't identify internal)", () => {
@@ -99,12 +103,18 @@ describe("detectSourceType (strict, for fresh user input)", () => {
   });
 
   it("base_url comparison is case-insensitive", () => {
-    expect(detectSourceType("HTTPS://V2HUB.LINK/sub/xyz", BASE)).toBe("internal_token");
+    expect(detectSourceType("HTTPS://V2HUB.LINK/sub/xyz", BASE)).toBe(
+      "internal_token",
+    );
   });
 
   it("base_url trailing slash is handled", () => {
-    expect(detectSourceType(`${BASE}/sub/abc`, BASE + "/")).toBe("internal_token");
-    expect(detectSourceType(`${BASE}/sub/abc`, BASE + "///")).toBe("internal_token");
+    expect(detectSourceType(`${BASE}/sub/abc`, BASE + "/")).toBe(
+      "internal_token",
+    );
+    expect(detectSourceType(`${BASE}/sub/abc`, BASE + "///")).toBe(
+      "internal_token",
+    );
   });
 
   it("junk without any scheme:// is rejected (null)", () => {
@@ -172,7 +182,7 @@ describe("clampDepth", () => {
     expect(clampDepth("not a number")).toBe(3);
     expect(clampDepth(NaN)).toBe(3);
     expect(clampDepth(undefined)).toBe(3);
-    expect(clampDepth(null)).toBe(3);
+    expect(clampDepth(null)).toBe(null);
   });
 });
 
@@ -189,8 +199,14 @@ describe("toSourceItem", () => {
 
   it("converts an object entry preserving is_hidden/max_depth", () => {
     const item = toSourceItem(
-      { id: "h1", data: "vless://b", is_hidden: true, max_depth: 1, order_index: 5 },
-      0
+      {
+        id: "h1",
+        data: "vless://b",
+        is_hidden: true,
+        max_depth: 1,
+        order_index: 5,
+      },
+      0,
     );
     expect(item.id).toBe("h1");
     expect(item.is_hidden).toBe(true);
@@ -204,7 +220,10 @@ describe("toSourceItem", () => {
   });
 
   it("uses explicit source_type over inferred one", () => {
-    const item = toSourceItem({ data: "vless://a", source_type: "internal_token" }, 0);
+    const item = toSourceItem(
+      { data: "vless://a", source_type: "internal_token" },
+      0,
+    );
     expect(item.source_type).toBe("internal_token");
   });
 

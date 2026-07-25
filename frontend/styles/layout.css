@@ -487,7 +487,9 @@
   color: #fff;
   font-weight: 800;
   letter-spacing: -0.04em;
-  transition: background var(--t), border-color var(--t);
+  transition:
+    background var(--t),
+    border-color var(--t);
   position: relative;
 }
 

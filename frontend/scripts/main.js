@@ -70,41 +70,41 @@ async function init() {
 
 // Export global handlers for onclick attributes
 window.openConnectModal = Subscriptions.openConnectModal;
-window.connect           = Subscriptions.connectToAPI;
-window.disconnect        = Subscriptions.disconnectFromAPI;
-window.reloadAll         = Subscriptions.reloadAll;
-window.openCreateModal   = Subscriptions.openCreateModal;
+window.connect = Subscriptions.connectToAPI;
+window.disconnect = Subscriptions.disconnectFromAPI;
+window.reloadAll = Subscriptions.reloadAll;
+window.openCreateModal = Subscriptions.openCreateModal;
 window.addCreateSourceRow = Subscriptions.addCreateSourceRow;
 window.createSubscription = Subscriptions.createSubscription;
-window.openEditor        = Subscriptions.openEditor;
-window.goBack            = Subscriptions.goBack;
-window.switchTab         = Sources.switchTabUI;
+window.openEditor = Subscriptions.openEditor;
+window.goBack = Subscriptions.goBack;
+window.switchTab = Sources.switchTabUI;
 window.openAddSourceModal = Sources.openAddSourceModal;
 window.addSourceRow = Sources.addSourceRow;
-window.addSource         = Sources.addSource;
-window.refreshSource     = Sources.refreshSource;
-window.openCtxMenu       = Sources.openCtxMenu;
+window.addSource = Sources.addSource;
+window.refreshSource = Sources.refreshSource;
+window.openCtxMenu = Sources.openCtxMenu;
 window.deleteSourceFromCtx = Sources.deleteSourceFromCtx;
-window.openEditSubModal  = Subscriptions.openEditSubModal;
-window.saveSubEdit       = Subscriptions.saveSubEdit;
-window.deleteSubConfirm  = Subscriptions.deleteSubConfirm;
-window.copyExportUrl     = Sources.copyExportUrl;
-window.copyB64           = Sources.copyB64;
+window.openEditSubModal = Subscriptions.openEditSubModal;
+window.saveSubEdit = Subscriptions.saveSubEdit;
+window.deleteSubConfirm = Subscriptions.deleteSubConfirm;
+window.copyExportUrl = Sources.copyExportUrl;
+window.copyB64 = Sources.copyB64;
 window.copySourceFromCtx = Sources.copySourceFromCtx;
-window.downloadBundle    = Sources.downloadBundle;
-window.openQrModal       = Sources.openQrModal;
-window.downloadQr        = Sources.downloadQr;
-window.openEditorMenu    = Sources.openEditorMenu;
-window.closeEditorMenu   = Sources.closeEditorMenu;
-window.reloadSelected    = Subscriptions.reloadSelected;
-window.saveChanges       = Subscriptions.saveChanges;
-window.discardChanges    = Subscriptions.discardChanges;
+window.downloadBundle = Sources.downloadBundle;
+window.openQrModal = Sources.openQrModal;
+window.downloadQr = Sources.downloadQr;
+window.openEditorMenu = Sources.openEditorMenu;
+window.closeEditorMenu = Sources.closeEditorMenu;
+window.reloadSelected = Subscriptions.reloadSelected;
+window.saveChanges = Subscriptions.saveChanges;
+window.discardChanges = Subscriptions.discardChanges;
 window.saveSourceComment = Sources.saveSourceComment;
 window.editSourceCommentFromCtx = Sources.editSourceCommentFromCtx;
 window.toggleSourceHiddenInModal = Sources.toggleSourceHiddenInModal;
 window.toggleSourceAdvanced = Sources.toggleSourceAdvanced;
 window.stepSourceDepth = Sources.stepSourceDepth;
-window.closeModal        = closeModal;
+window.closeModal = closeModal;
 
 // ── About popup ──────────────────────────────────────────────────────────────
 // Tracks the button position via rAF so the popup follows on scroll/resize.
@@ -117,7 +117,7 @@ function _positionAboutPopup() {
 
   const rect = btn.getBoundingClientRect();
   popup.style.position = "fixed";
-  popup.style.top  = `${rect.bottom + 10}px`;
+  popup.style.top = `${rect.bottom + 10}px`;
   popup.style.left = `${rect.left}px`;
 }
 
