@@ -2,6 +2,10 @@
 
 Web application for managing V2Hub subscriptions and sources.
 
+### 🌐 Part of the [V2Hub Ecosystem](https://github.com/nestthub/nestthub/blob/main/ecosystems/v2hub/README.md)
+
+This package is one component of V2Hub — see the full project overview, architecture, and all related repositories.
+
 Stack:
 
 - Backend: FastAPI + Pydantic
