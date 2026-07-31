@@ -100,7 +100,7 @@ export function renderSubscriptionsList() {
         <div class="sub-desc">${escapeHtml(sub.description || "Без описания")}</div>
       </div>
       <div class="sub-meta">
-        <span>${sourcesCount} источ.</span>
+        <span>${sourcesCount} конф.</span>
         <span class="chevron">›</span>
       </div>
     `;
