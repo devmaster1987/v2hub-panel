@@ -306,7 +306,7 @@ export async function saveChanges() {
       is_hidden: Boolean(s.is_hidden),
       max_depth: clampDepth(s.max_depth ?? 3),
     }));
-    await API.replaceSources(sub.token, sources);
+    const updated = await API.replaceSources(sub.token, sources);
 
     // Update snapshot so discard works correctly after save
     State.state.originalSources = State.state.draft.map((s) => ({ ...s }));
@@ -316,15 +316,15 @@ export async function saveChanges() {
     // Refresh subscription data silently (no toast from reloadSelected)
     await loadSelectedSubscription(sub.token, false);
 
-    // Update the sources count in the subscriptions list
+    // Prefer the count returned by the update request. If it is absent, keep
+    // the previously known value instead of replacing it with the source count.
     const idx = State.state.subscriptions.findIndex(
-      (s) => s.token === sub.token,
+      (item) => item.token === sub.token,
     );
-    if (idx !== -1) {
-      State.state.subscriptions[idx].sources_count =
-        State.getDraftSources().length;
-      renderSubscriptionsList();
+    if (idx !== -1 && updated?.sources_count != null) {
+      State.state.subscriptions[idx].sources_count = updated.sources_count;
     }
+    renderSubscriptionsList();
 
     showToast("Изменения сохранены");
   } catch (e) {
