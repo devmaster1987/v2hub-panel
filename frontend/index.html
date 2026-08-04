@@ -11,14 +11,22 @@
     <!-- Telegram Mini Apps SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-    <!-- Styles -->
+    <!-- Styles
     <link rel="stylesheet" href="/static/styles/variables.css" />
     <link rel="stylesheet" href="/static/styles/base.css" />
     <link rel="stylesheet" href="/static/styles/layout.css" />
     <link rel="stylesheet" href="/static/styles/components.css" />
     <link rel="stylesheet" href="/static/styles/components-advanced.css" />
     <link rel="stylesheet" href="/static/styles/modals.css" />
-    <link rel="stylesheet" href="/static/styles/mobile.css" />
+    <link rel="stylesheet" href="/static/styles/mobile.css" /> -->
+
+    <link rel="stylesheet" href="./styles/variables.css" />
+<link rel="stylesheet" href="./styles/base.css" />
+<link rel="stylesheet" href="./styles/layout.css" />
+<link rel="stylesheet" href="./styles/components.css" />
+<link rel="stylesheet" href="./styles/components-advanced.css" />
+<link rel="stylesheet" href="./styles/modals.css" />
+<link rel="stylesheet" href="./styles/mobile.css" />
   </head>
   <body>
     <div class="app-shell">
@@ -151,6 +159,13 @@
                   onclick="openCreateModal()"
                 >
                   ＋ Создать
+                </button>
+                <button
+                  class="btn btn-secondary"
+                  type="button"
+                  onclick="openProviders()"
+                >
+                  VPN Providers
                 </button>
               </div>
               <div class="list" id="subs-list"></div>
@@ -328,6 +343,30 @@
                   </div>
                 </div>
               </div>
+            </div>
+          </section>
+
+          <!-- Recommended Providers Screen -->
+          <section class="panel screen" id="screen-providers">
+            <div class="detail-head">
+              <div>
+                <div class="detail-title">Recommended Providers</div>
+                <div class="detail-subtitle">
+                  Curated list of trusted VPN providers
+                </div>
+              </div>
+              <button
+                class="icon-btn"
+                type="button"
+                onclick="goBackToList()"
+                title="Назад"
+              >
+                ‹
+              </button>
+            </div>
+
+            <div class="section">
+              <div class="list" id="providers-list"></div>
             </div>
           </section>
         </div>
@@ -778,6 +817,8 @@
     </div>
 
     <!-- Scripts -->
-    <script type="module" src="/static/scripts/main.js"></script>
+    <!-- <script type="module" src="/static/scripts/main.js"></script> -->
+<script type="module" src="./scripts/main.js"></script>
+
   </body>
 </html>

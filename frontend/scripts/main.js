@@ -13,6 +13,7 @@ import { $, onReady } from "./utils/dom.js";
 import { closeModal, setupModalHandlers } from "./ui/modals.js";
 import * as Subscriptions from "./ui/subscriptions.js";
 import * as Sources from "./ui/sources.js";
+import * as Providers from "./ui/providers.js";
 import * as State from "./state.js";
 import { fetchServerConfig } from "./api.js";
 
@@ -105,65 +106,8 @@ window.toggleSourceHiddenInModal = Sources.toggleSourceHiddenInModal;
 window.toggleSourceAdvanced = Sources.toggleSourceAdvanced;
 window.stepSourceDepth = Sources.stepSourceDepth;
 window.closeModal = closeModal;
+// Providers
+window.openProviders = Providers.openProviders;
+window.goBackToList = Providers.goBackToList;
 
 // ── About popup ──────────────────────────────────────────────────────────────
-// Tracks the button position via rAF so the popup follows on scroll/resize.
-let _aboutRafId = null;
-
-function _positionAboutPopup() {
-  const btn = $("brand-mark-btn");
-  const popup = $("about-popup");
-  if (!btn || !popup) return;
-
-  const rect = btn.getBoundingClientRect();
-  popup.style.position = "fixed";
-  popup.style.top = `${rect.bottom + 10}px`;
-  popup.style.left = `${rect.left}px`;
-}
-
-function _trackAboutPopup() {
-  _positionAboutPopup();
-  _aboutRafId = requestAnimationFrame(_trackAboutPopup);
-}
-
-function _closeAboutPopup() {
-  const popup = $("about-popup");
-  if (!popup) return;
-  popup.classList.remove("open");
-  popup.setAttribute("aria-hidden", "true");
-  cancelAnimationFrame(_aboutRafId);
-  _aboutRafId = null;
-  document.removeEventListener("click", _onAboutOutsideClick, true);
-}
-
-function _onAboutOutsideClick(e) {
-  // Clicking the button again → toggleAboutPopup handles toggle; skip here
-  if (e.target.closest("#brand-mark-btn")) return;
-  _closeAboutPopup();
-}
-
-window.toggleAboutPopup = function toggleAboutPopup() {
-  const popup = $("about-popup");
-  if (!popup) return;
-
-  if (popup.classList.contains("open")) {
-    // Second click on the same button → close
-    _closeAboutPopup();
-    return;
-  }
-
-  // Open: position first, then show
-  _positionAboutPopup();
-  popup.classList.add("open");
-  popup.setAttribute("aria-hidden", "false");
-
-  // Start tracking button position
-  _aboutRafId = requestAnimationFrame(_trackAboutPopup);
-
-  // Close on any outside click (next tick so this click doesn't immediately close it)
-  setTimeout(() => {
-    document.addEventListener("click", _onAboutOutsideClick, true);
-  }, 0);
-};
-
-onReady(init);
