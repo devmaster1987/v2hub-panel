@@ -14,10 +14,15 @@ body {
   min-height: 100%;
 }
 
+body {
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+
 html {
-  /* Prevent iOS/Android rubber-band white flash */
   overscroll-behavior: none;
-  background: #06101c;
+  background: var(--bg);
 }
 
 body {
@@ -29,29 +34,35 @@ body {
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
+
   color: var(--text);
   font-size: 15px;
   line-height: 1.45;
   overflow-x: hidden;
   overscroll-behavior: none;
+
   background:
     radial-gradient(
       1100px 760px at 10% -5%,
-      rgba(92, 167, 255, 0.2),
+      rgba(92, 167, 255, 0.18),
       transparent 44%
     ),
     radial-gradient(
       900px 680px at 105% 8%,
-      rgba(55, 192, 242, 0.16),
+      rgba(55, 192, 242, 0.14),
       transparent 42%
     ),
     radial-gradient(
       900px 700px at 50% 115%,
-      rgba(74, 222, 128, 0.07),
+      rgba(74, 222, 128, 0.06),
       transparent 34%
     ),
-    linear-gradient(180deg, #06101c 0%, #0b1321 100%);
+    linear-gradient(180deg, var(--bg), var(--bg2));
+
   background-attachment: fixed;
+  transition:
+    background .3s ease,
+    color .3s ease;
 }
 
 button,

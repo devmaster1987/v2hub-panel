@@ -17,7 +17,15 @@ import * as Providers from "./ui/providers.js";
 import * as State from "./state.js";
 import { fetchServerConfig } from "./api.js";
 
+// FIX: Imported once, not twice
+import { loadSavedTheme, openSettings } from "./ui/settings.js";
+
 async function init() {
+  // FIX: Removed duplicate 'async function init()' wrapper
+  
+  // Load saved theme (Dark/Light) before anything else
+  loadSavedTheme();
+
   // Expand to full available height in Telegram Mini App (not fullscreen)
   if (window.Telegram?.WebApp) {
     window.Telegram.WebApp.expand();
@@ -69,6 +77,18 @@ async function init() {
   }
 }
 
+// ── About popup ──────────────────────────────────────────────────────────────
+
+/**
+ * Toggle about popup visibility
+ */
+export function toggleAboutPopup() {
+  const popup = document.getElementById("about-popup");
+  if (!popup) return;
+  const isOpen = popup.classList.toggle("show");
+  popup.setAttribute("aria-hidden", !isOpen);
+}
+
 // Export global handlers for onclick attributes
 window.openConnectModal = Subscriptions.openConnectModal;
 window.connect = Subscriptions.connectToAPI;
@@ -106,8 +126,14 @@ window.toggleSourceHiddenInModal = Sources.toggleSourceHiddenInModal;
 window.toggleSourceAdvanced = Sources.toggleSourceAdvanced;
 window.stepSourceDepth = Sources.stepSourceDepth;
 window.closeModal = closeModal;
+window.toggleAboutPopup = toggleAboutPopup; // FIX: Added this so HTML can find it
+
 // Providers
 window.openProviders = Providers.openProviders;
 window.goBackToList = Providers.goBackToList;
 
-// ── About popup ──────────────────────────────────────────────────────────────
+// Settings (Theme) - FIX: Exposed globally for HTML 'onclick'
+window.openSettings = openSettings;
+
+// Boot the app
+init();

@@ -1,17 +1,15 @@
 <!doctype html>
 <html lang="ru">
-  <head>
-    <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
-    />
-    <title>v2hub</title>
 
-    <!-- Telegram Mini Apps SDK -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>v2hub</title>
 
-    <!-- Styles
+  <!-- Telegram Mini Apps SDK -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <!-- Styles
     <link rel="stylesheet" href="/static/styles/variables.css" />
     <link rel="stylesheet" href="/static/styles/base.css" />
     <link rel="stylesheet" href="/static/styles/layout.css" />
@@ -20,805 +18,531 @@
     <link rel="stylesheet" href="/static/styles/modals.css" />
     <link rel="stylesheet" href="/static/styles/mobile.css" /> -->
 
-    <link rel="stylesheet" href="./styles/variables.css" />
-<link rel="stylesheet" href="./styles/base.css" />
-<link rel="stylesheet" href="./styles/layout.css" />
-<link rel="stylesheet" href="./styles/components.css" />
-<link rel="stylesheet" href="./styles/components-advanced.css" />
-<link rel="stylesheet" href="./styles/modals.css" />
-<link rel="stylesheet" href="./styles/mobile.css" />
-  </head>
-  <body>
-    <div class="app-shell">
-      <div class="app">
-        <header class="topbar">
-          <div class="brand">
-            <button
-              class="brand-mark"
-              type="button"
-              id="brand-mark-btn"
-              onclick="toggleAboutPopup()"
-              title="О приложении"
-              aria-label="О приложении"
-            >
-              v2
-            </button>
+  <link rel="stylesheet" href="./styles/variables.css" />
+  <link rel="stylesheet" href="./styles/base.css" />
+  <link rel="stylesheet" href="./styles/layout.css" />
+  <link rel="stylesheet" href="./styles/components.css" />
+  <link rel="stylesheet" href="./styles/components-advanced.css" />
+  <link rel="stylesheet" href="./styles/modals.css" />
+  <link rel="stylesheet" href="./styles/mobile.css" />
+</head>
 
-            <!-- About popup -->
-            <div class="about-popup" id="about-popup" aria-hidden="true">
-              <div class="about-name">v2hub mini app</div>
-              <div class="about-version" id="about-version">v1.0.1</div>
-              <div class="about-links">
-                <a
-                  class="about-link"
-                  href="https://github.com/nestthub"
-                  target="_blank"
-                  rel="noopener"
-                  title="GitHub"
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    width="18"
-                    height="18"
-                  >
-                    <path
-                      d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.605-3.369-1.342-3.369-1.342-.454-1.154-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.268 2.75 1.026A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.026 2.747-1.026.546 1.377.202 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.741 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"
-                    />
-                  </svg>
-                </a>
-                <a
-                  class="about-link"
-                  href="https://t.me/v2hubot"
-                  target="_blank"
-                  rel="noopener"
-                  title="Telegram бот"
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    width="18"
-                    height="18"
-                  >
-                    <path
-                      d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"
-                    />
-                  </svg>
-                </a>
-                <a
-                  class="about-link"
-                  href="https://t.me/nestt"
-                  target="_blank"
-                  rel="noopener"
-                  title="Разработчик"
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    width="18"
-                    height="18"
-                  >
-                    <path
-                      d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"
-                    />
-                  </svg>
-                </a>
+<body>
+  <div class="app-shell">
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">
+          <button class="brand-mark" type="button" id="brand-mark-btn" onclick="toggleAboutPopup()" title="О приложении"
+            aria-label="О приложении">
+            v2
+          </button>
+
+          <!-- About popup -->
+          <div class="about-popup" id="about-popup" aria-hidden="true">
+            <div class="about-name">v2hub mini app</div>
+            <div class="about-version" id="about-version">v1.0.1</div>
+            <div class="about-links">
+              <a class="about-link" href="https://github.com/nestthub" target="_blank" rel="noopener" title="GitHub">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                  <path
+                    d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.605-3.369-1.342-3.369-1.342-.454-1.154-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.268 2.75 1.026A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.026 2.747-1.026.546 1.377.202 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.741 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z" />
+                </svg>
+              </a>
+              <a class="about-link" href="https://t.me/v2hubot" target="_blank" rel="noopener" title="Telegram бот">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                  <path
+                    d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
+                </svg>
+              </a>
+              <a class="about-link" href="https://t.me/nestt" target="_blank" rel="noopener" title="Разработчик">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                  <path
+                    d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
+                </svg>
+              </a>
+            </div>
+          </div>
+
+          <div class="brand-copy">
+            <div class="brand-title">v2hub</div>
+            <div class="brand-subtitle">professional mini app</div>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <button class="icon-btn primary" type="button" onclick="openConnectModal()" title="Подключение">
+            ⌁
+          </button>
+         
+          <button class="icon-btn primary" type="button" onclick="openSettings()" title="Settings">
+            ⚙️
+          </button>
+        </div>
+      </header>
+
+      <div class="layout">
+        <!-- List Screen -->
+        <section class="panel screen active" id="screen-list">
+          <div class="detail-head">
+            <div>
+              <div class="detail-title">Подписки</div>
+              <div class="detail-subtitle">
+                Управление источниками, предпросмотром и экспортом
               </div>
             </div>
-
-            <div class="brand-copy">
-              <div class="brand-title">v2hub</div>
-              <div class="brand-subtitle">professional mini app</div>
+          </div>
+          <div class="section">
+            <div class="stats-row">
+              <div class="stat">
+                <div class="stat-value" id="stat-subs">0</div>
+                <div class="stat-label">Подписок</div>
+              </div>
+              <div class="stat">
+                <div class="stat-value" id="stat-sources">0</div>
+                <div class="stat-label">Конфигов</div>
+              </div>
+            </div>
+            <div class="toolbar">
+              <button class="btn btn-secondary" type="button" onclick="reloadAll()">
+                Обновить
+              </button>
+              <button class="btn btn-primary" type="button" onclick="openCreateModal()">
+                ＋ Создать
+              </button>
+              <button class="btn btn-secondary" type="button" onclick="openProviders()">
+                VPN Providers
+              </button>
+            </div>
+            <div class="list" id="subs-list"></div>
+            <div class="connect-banner">
+              Публичная ссылка, Base64 и QR-код доступны внутри выбранной
+              подписки.
             </div>
           </div>
-          <div class="topbar-actions">
-            <button
-              class="icon-btn primary"
-              type="button"
-              onclick="openConnectModal()"
-              title="Подключение"
-            >
-              ⌁
-            </button>
-          </div>
-        </header>
+        </section>
 
-        <div class="layout">
-          <!-- List Screen -->
-          <section class="panel screen active" id="screen-list">
+        <!-- Editor Screen -->
+        <section class="panel screen" id="screen-editor">
+          <div class="editor-shell">
             <div class="detail-head">
-              <div>
-                <div class="detail-title">Подписки</div>
-                <div class="detail-subtitle">
-                  Управление источниками, предпросмотром и экспортом
+              <div style="min-width: 0; flex: 1">
+                <div class="detail-title" id="editor-title">Подписка</div>
+                <div class="detail-subtitle" id="editor-subtitle">
+                  mini app
                 </div>
               </div>
-            </div>
-            <div class="section">
-              <div class="stats-row">
-                <div class="stat">
-                  <div class="stat-value" id="stat-subs">0</div>
-                  <div class="stat-label">Подписок</div>
-                </div>
-                <div class="stat">
-                  <div class="stat-value" id="stat-sources">0</div>
-                  <div class="stat-label">Конфигов</div>
-                </div>
-              </div>
-              <div class="toolbar">
-                <button
-                  class="btn btn-secondary"
-                  type="button"
-                  onclick="reloadAll()"
-                >
-                  Обновить
-                </button>
-                <button
-                  class="btn btn-primary"
-                  type="button"
-                  onclick="openCreateModal()"
-                >
-                  ＋ Создать
-                </button>
-                <button
-                  class="btn btn-secondary"
-                  type="button"
-                  onclick="openProviders()"
-                >
-                  VPN Providers
-                </button>
-              </div>
-              <div class="list" id="subs-list"></div>
-              <div class="connect-banner">
-                Публичная ссылка, Base64 и QR-код доступны внутри выбранной
-                подписки.
-              </div>
-            </div>
-          </section>
-
-          <!-- Editor Screen -->
-          <section class="panel screen" id="screen-editor">
-            <div class="editor-shell">
-              <div class="detail-head">
-                <div style="min-width: 0; flex: 1">
-                  <div class="detail-title" id="editor-title">Подписка</div>
-                  <div class="detail-subtitle" id="editor-subtitle">
-                    mini app
-                  </div>
-                </div>
-                <div
-                  style="
+              <div style="
                     display: flex;
                     gap: 8px;
                     align-items: center;
                     flex-shrink: 0;
-                  "
-                >
-                  <button
-                    class="icon-btn"
-                    type="button"
-                    id="edit-sub-btn"
-                    onclick="openEditSubModal()"
-                    title="Редактировать"
-                  >
-                    ✎
-                  </button>
-                  <button
-                    class="icon-btn"
-                    type="button"
-                    onclick="openEditorMenu(event)"
-                    title="Меню"
-                  >
-                    ⋯
-                  </button>
-                  <button
-                    class="icon-btn"
-                    type="button"
-                    onclick="goBack()"
-                    title="Назад"
-                  >
-                    ‹
-                  </button>
-                </div>
-              </div>
-              <div class="tabs">
-                <button
-                  class="tab active"
-                  type="button"
-                  data-tab="sources"
-                  onclick="switchTab('sources')"
-                >
-                  Источники
+                  ">
+                <button class="icon-btn" type="button" id="edit-sub-btn" onclick="openEditSubModal()"
+                  title="Редактировать">
+                  ✎
                 </button>
-                <button
-                  class="tab"
-                  type="button"
-                  data-tab="preview"
-                  onclick="switchTab('preview')"
-                >
-                  Предпросмотр
+                <button class="icon-btn" type="button" onclick="openEditorMenu(event)" title="Меню">
+                  ⋯
                 </button>
-                <button
-                  class="tab"
-                  type="button"
-                  data-tab="export"
-                  onclick="switchTab('export')"
-                >
-                  Экспорт
+                <button class="icon-btn" type="button" onclick="goBack()" title="Назад">
+                  ‹
                 </button>
-              </div>
-              <div class="content tab-content" id="tab-sources">
-                <div class="sources-toolbar">
-                  <button
-                    class="btn btn-secondary"
-                    type="button"
-                    onclick="openAddSourceModal()"
-                  >
-                    ＋ Добавить источник
-                  </button>
-                  <div class="hint">
-                    Перетаскивай источники за ручку слева, чтобы менять порядок.
-                  </div>
-                </div>
-                <div class="sources-list" id="sources-list"></div>
-                <div class="drag-hint" id="drag-hint" style="display: none">
-                  Перетащите источник для изменения порядка
-                </div>
-              </div>
-              <div
-                class="content tab-content"
-                id="tab-preview"
-                style="display: none"
-              >
-                <div class="preview-grid" id="stats-grid"></div>
-                <div class="preview-box" id="preview-box"></div>
-                <div class="preview-footer" id="preview-footer"></div>
-              </div>
-              <div
-                class="content tab-content"
-                id="tab-export"
-                style="display: none"
-              >
-                <div class="export-grid">
-                  <div class="export-block">
-                    <div class="export-label">Публичная ссылка</div>
-                    <div class="export-desc">
-                      Используйте её для подключения к подписке
-                    </div>
-                    <div class="export-box">
-                      <div class="export-value" id="export-url">—</div>
-                      <button
-                        class="copy-btn"
-                        type="button"
-                        onclick="copyExportUrl()"
-                      >
-                        ⎘
-                      </button>
-                    </div>
-                  </div>
-                  <div class="export-block">
-                    <div class="export-label">Base64</div>
-                    <div class="export-desc">
-                      Строка для клиентов, поддерживающих импорт подписок
-                    </div>
-                    <div class="export-box">
-                      <div
-                        class="export-value"
-                        id="export-b64"
-                        style="color: #cbd5e1"
-                      >
-                        —
-                      </div>
-                      <button
-                        class="copy-btn"
-                        type="button"
-                        onclick="copyB64()"
-                      >
-                        ⎘
-                      </button>
-                    </div>
-                  </div>
-                  <div class="export-actions">
-                    <button
-                      class="btn btn-secondary"
-                      type="button"
-                      onclick="copyExportUrl()"
-                    >
-                      Копировать ссылку
-                    </button>
-                    <button
-                      class="btn btn-secondary"
-                      type="button"
-                      onclick="openQrModal()"
-                    >
-                      QR подписки
-                    </button>
-                    <button
-                      class="btn btn-primary"
-                      type="button"
-                      onclick="downloadBundle()"
-                    >
-                      Скачать
-                    </button>
-                  </div>
-                </div>
               </div>
             </div>
-          </section>
-
-          <!-- Recommended Providers Screen -->
-          <section class="panel screen" id="screen-providers">
-            <div class="detail-head">
-              <div>
-                <div class="detail-title">Recommended Providers</div>
-                <div class="detail-subtitle">
-                  Curated list of trusted VPN providers
-                </div>
-              </div>
-              <button
-                class="icon-btn"
-                type="button"
-                onclick="goBackToList()"
-                title="Назад"
-              >
-                ‹
+            <div class="tabs">
+              <button class="tab active" type="button" data-tab="sources" onclick="switchTab('sources')">
+                Источники
+              </button>
+              <button class="tab" type="button" data-tab="preview" onclick="switchTab('preview')">
+                Предпросмотр
+              </button>
+              <button class="tab" type="button" data-tab="export" onclick="switchTab('export')">
+                Экспорт
               </button>
             </div>
-
-            <div class="section">
-              <div class="list" id="providers-list"></div>
-            </div>
-          </section>
-        </div>
-      </div>
-    </div>
-
-    <!-- Save bar: fixed at bottom of viewport, shown when there are unsaved changes -->
-    <div class="save-bar" id="save-bar">
-      <button
-        class="btn btn-secondary"
-        type="button"
-        onclick="discardChanges()"
-      >
-        Отменить
-      </button>
-      <button class="btn btn-primary" type="button" onclick="saveChanges()">
-        Сохранить изменения
-      </button>
-    </div>
-
-    <!-- Connect Modal -->
-    <div class="modal-overlay" id="modal-connect">
-      <div class="modal">
-        <div class="modal-handle"></div>
-        <button
-          class="modal-close"
-          type="button"
-          onclick="closeModal('modal-connect')"
-        >
-          ✕
-        </button>
-        <div class="modal-title">Подключение к V2Hub API</div>
-        <div class="input-group" id="url-input-group">
-          <label class="input-label">
-            Base URL
-            <span class="fixed-badge hidden" id="url-fixed-badge"
-              >зафиксировано</span
-            >
-          </label>
-          <input
-            class="input-field"
-            id="connect-base-url"
-            type="url"
-            placeholder="https://api.example.com"
-            autocomplete="off"
-          />
-        </div>
-        <div class="input-group">
-          <label class="input-label">API токен</label>
-          <input
-            class="input-field"
-            id="connect-api-token"
-            type="password"
-            placeholder="Введите токен"
-            autocomplete="off"
-          />
-          <a
-            class="input-hint input-hint-link"
-            href="https://t.me/v2hubot?start=token"
-            target="_blank"
-            rel="noopener"
-            >Нет токена?</a
-          >
-        </div>
-        <div class="modal-footer" style="margin-top: 4px">
-          <button class="btn btn-ghost" type="button" onclick="disconnect()">
-            Сбросить
-          </button>
-          <button class="btn btn-primary" type="button" onclick="connect()">
-            Подключиться
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Add Source Modal -->
-    <div class="modal-overlay" id="modal-add-source">
-      <div class="modal">
-        <div class="modal-handle"></div>
-        <button
-          class="modal-close"
-          type="button"
-          onclick="closeModal('modal-add-source')"
-        >
-          ✕
-        </button>
-        <div class="modal-title">Добавить источник</div>
-
-        <div class="source-row-list" id="add-source-rows"></div>
-
-        <button class="add-row-btn" type="button" onclick="addSourceRow()">
-          + Добавить ещё строку
-        </button>
-
-        <div class="input-hint" style="margin-top: 6px; margin-bottom: 14px">
-          Поддерживаются: vless://, vmess://, ss://, trojan:// и другие. Также
-          можно добавить другие подписки
-        </div>
-
-        <button
-          class="btn btn-primary btn-full"
-          type="button"
-          onclick="addSource()"
-        >
-          Добавить источник<span id="add-source-count"></span>
-        </button>
-      </div>
-    </div>
-
-    <!-- Create Subscription Modal -->
-    <div class="modal-overlay" id="modal-create-sub">
-      <div class="modal">
-        <div class="modal-handle"></div>
-        <button
-          class="modal-close"
-          type="button"
-          onclick="closeModal('modal-create-sub')"
-        >
-          ✕
-        </button>
-        <div class="modal-title">Создать подписку</div>
-        <div class="input-group">
-          <label class="input-label">Название</label>
-          <input
-            class="input-field"
-            id="create-name"
-            type="text"
-            placeholder="Family"
-            maxlength="64"
-            autocomplete="off"
-          />
-          <div class="input-hint">Имя, которое видите только вы</div>
-        </div>
-        <div class="input-group">
-          <label class="input-label">Описание (видно в приложениях)</label>
-          <input
-            class="input-field"
-            id="create-desc"
-            type="text"
-            placeholder="v2hub.link"
-            maxlength="255"
-            autocomplete="off"
-          />
-        </div>
-
-        <div class="input-group">
-          <label class="input-label">Начальные источники</label>
-          <div class="source-row-list" id="create-source-rows"></div>
-          <button
-            class="add-row-btn"
-            type="button"
-            onclick="addCreateSourceRow()"
-          >
-            + Добавить ещё строку
-          </button>
-        </div>
-
-        <button
-          class="btn btn-primary btn-full"
-          type="button"
-          onclick="createSubscription()"
-        >
-          Создать
-        </button>
-      </div>
-    </div>
-
-    <!-- Edit Subscription Modal -->
-    <div class="modal-overlay" id="modal-edit-sub">
-      <div class="modal">
-        <div class="modal-handle"></div>
-
-        <button
-          class="modal-close"
-          type="button"
-          onclick="closeModal('modal-edit-sub')"
-        >
-          ✕
-        </button>
-
-        <div class="modal-title">Редактировать подписку</div>
-
-        <div class="input-group">
-          <label class="input-label">Название</label>
-          <input
-            class="input-field"
-            id="edit-sub-name"
-            type="text"
-            maxlength="64"
-            autocomplete="off"
-          />
-        </div>
-
-        <div class="input-group">
-          <label class="input-label">Описание (видно в приложениях)</label>
-          <input
-            class="input-field"
-            id="edit-sub-desc"
-            type="text"
-            maxlength="255"
-            placeholder="v2hub"
-            autocomplete="off"
-          />
-        </div>
-
-        <div class="modal-footer">
-          <button class="btn btn-primary" type="button" onclick="saveSubEdit()">
-            Сохранить
-          </button>
-
-          <button
-            class="btn btn-danger btn-primary"
-            type="button"
-            onclick="deleteSubConfirm()"
-          >
-            🗑 Удалить
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Edit Source Comment Modal -->
-    <div class="modal-overlay" id="modal-edit-source-comment">
-      <div class="modal">
-        <div class="modal-handle"></div>
-
-        <button
-          class="modal-close"
-          type="button"
-          onclick="closeModal('modal-edit-source-comment')"
-        >
-          ✕
-        </button>
-
-        <div class="modal-title" id="source-settings-title">
-          Редактировать конфиг
-        </div>
-
-        <div class="input-group" id="source-comment-group">
-          <label class="input-label">Комментарий</label>
-
-          <input
-            class="input-field"
-            id="edit-source-comment"
-            type="text"
-            maxlength="255"
-            autocomplete="off"
-            placeholder="Введите комментарий"
-          />
-
-          <div class="input-hint" id="source-comment-hint">
-            Отображается только в интерфейсе
-          </div>
-        </div>
-
-        <div class="setting-row">
-          <div class="setting-row-text">
-            <div class="setting-row-title">Скрыт от пользователей</div>
-            <div class="setting-row-hint">
-              Источник останется в подписке, но не попадёт в резолв
-            </div>
-          </div>
-          <button
-            type="button"
-            class="toggle-switch"
-            id="edit-source-hidden-toggle"
-            role="switch"
-            aria-checked="false"
-            onclick="toggleSourceHiddenInModal()"
-          ></button>
-        </div>
-
-        <div
-          class="advanced-toggle"
-          id="source-advanced-toggle"
-          onclick="toggleSourceAdvanced()"
-        >
-          <span>Расширенные настройки</span>
-          <span class="advanced-toggle-chevron">▾</span>
-        </div>
-
-        <div class="advanced-body" id="source-advanced-body">
-          <div class="advanced-body-inner">
-            <div class="setting-row">
-              <div class="setting-row-text">
-                <div class="setting-row-title">Глубина вложенности</div>
-                <div class="setting-row-hint">
-                  Сколько уровней вложенных подписок разрешено (0–3)
+            <div class="content tab-content" id="tab-sources">
+              <div class="sources-toolbar">
+                <button class="btn btn-secondary" type="button" onclick="openAddSourceModal()">
+                  ＋ Добавить источник
+                </button>
+                <div class="hint">
+                  Перетаскивай источники за ручку слева, чтобы менять порядок.
                 </div>
               </div>
-              <div class="depth-stepper">
-                <button
-                  type="button"
-                  class="depth-stepper-btn"
-                  id="depth-stepper-minus"
-                  onclick="stepSourceDepth(-1)"
-                >
-                  −
-                </button>
-                <span class="depth-stepper-value" id="depth-stepper-value"
-                  >3</span
-                >
-                <button
-                  type="button"
-                  class="depth-stepper-btn"
-                  id="depth-stepper-plus"
-                  onclick="stepSourceDepth(1)"
-                >
-                  +
-                </button>
+              <div class="sources-list" id="sources-list"></div>
+              <div class="drag-hint" id="drag-hint" style="display: none">
+                Перетащите источник для изменения порядка
+              </div>
+            </div>
+            <div class="content tab-content" id="tab-preview" style="display: none">
+              <div class="preview-grid" id="stats-grid"></div>
+              <div class="preview-box" id="preview-box"></div>
+              <div class="preview-footer" id="preview-footer"></div>
+            </div>
+            <div class="content tab-content" id="tab-export" style="display: none">
+              <div class="export-grid">
+                <div class="export-block">
+                  <div class="export-label">Публичная ссылка</div>
+                  <div class="export-desc">
+                    Используйте её для подключения к подписке
+                  </div>
+                  <div class="export-box">
+                    <div class="export-value" id="export-url">—</div>
+                    <button class="copy-btn" type="button" onclick="copyExportUrl()">
+                      ⎘
+                    </button>
+                  </div>
+                </div>
+                <div class="export-block">
+                  <div class="export-label">Base64</div>
+                  <div class="export-desc">
+                    Строка для клиентов, поддерживающих импорт подписок
+                  </div>
+                  <div class="export-box">
+                    <div class="export-value" id="export-b64" style="color: #cbd5e1">
+                      —
+                    </div>
+                    <button class="copy-btn" type="button" onclick="copyB64()">
+                      ⎘
+                    </button>
+                  </div>
+                </div>
+                <div class="export-actions">
+                  <button class="btn btn-secondary" type="button" onclick="copyExportUrl()">
+                    Копировать ссылку
+                  </button>
+                  <button class="btn btn-secondary" type="button" onclick="openQrModal()">
+                    QR подписки
+                  </button>
+                  <button class="btn btn-primary" type="button" onclick="downloadBundle()">
+                    Скачать
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
-        <button
-          class="btn btn-primary btn-full"
-          type="button"
-          onclick="saveSourceComment()"
-        >
+        <!-- Recommended Providers Screen -->
+        <section class="panel screen" id="screen-providers">
+          <div class="detail-head">
+            <div>
+              <div class="detail-title">Recommended Providers</div>
+              <div class="detail-subtitle">
+                Curated list of trusted VPN providers
+              </div>
+            </div>
+            <button class="icon-btn" type="button" onclick="goBackToList()" title="Назад">
+              ‹
+            </button>
+          </div>
+
+          <div class="section">
+            <div class="list" id="providers-list"></div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- Save bar: fixed at bottom of viewport, shown when there are unsaved changes -->
+  <div class="save-bar" id="save-bar">
+    <button class="btn btn-secondary" type="button" onclick="discardChanges()">
+      Отменить
+    </button>
+    <button class="btn btn-primary" type="button" onclick="saveChanges()">
+      Сохранить изменения
+    </button>
+  </div>
+
+  <!-- Connect Modal -->
+  <div class="modal-overlay" id="modal-connect">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <button class="modal-close" type="button" onclick="closeModal('modal-connect')">
+        ✕
+      </button>
+      <div class="modal-title">Подключение к V2Hub API</div>
+      <div class="input-group" id="url-input-group">
+        <label class="input-label">
+          Base URL
+          <span class="fixed-badge hidden" id="url-fixed-badge">зафиксировано</span>
+        </label>
+        <input class="input-field" id="connect-base-url" type="url" placeholder="https://api.example.com"
+          autocomplete="off" />
+      </div>
+      <div class="input-group">
+        <label class="input-label">API токен</label>
+        <input class="input-field" id="connect-api-token" type="password" placeholder="Введите токен"
+          autocomplete="off" />
+        <a class="input-hint input-hint-link" href="https://t.me/v2hubot?start=token" target="_blank" rel="noopener">Нет
+          токена?</a>
+      </div>
+      <div class="modal-footer" style="margin-top: 4px">
+        <button class="btn btn-ghost" type="button" onclick="disconnect()">
+          Сбросить
+        </button>
+        <button class="btn btn-primary" type="button" onclick="connect()">
+          Подключиться
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Source Modal -->
+  <div class="modal-overlay" id="modal-add-source">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <button class="modal-close" type="button" onclick="closeModal('modal-add-source')">
+        ✕
+      </button>
+      <div class="modal-title">Добавить источник</div>
+
+      <div class="source-row-list" id="add-source-rows"></div>
+
+      <button class="add-row-btn" type="button" onclick="addSourceRow()">
+        + Добавить ещё строку
+      </button>
+
+      <div class="input-hint" style="margin-top: 6px; margin-bottom: 14px">
+        Поддерживаются: vless://, vmess://, ss://, trojan:// и другие. Также
+        можно добавить другие подписки
+      </div>
+
+      <button class="btn btn-primary btn-full" type="button" onclick="addSource()">
+        Добавить источник<span id="add-source-count"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Create Subscription Modal -->
+  <div class="modal-overlay" id="modal-create-sub">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <button class="modal-close" type="button" onclick="closeModal('modal-create-sub')">
+        ✕
+      </button>
+      <div class="modal-title">Создать подписку</div>
+      <div class="input-group">
+        <label class="input-label">Название</label>
+        <input class="input-field" id="create-name" type="text" placeholder="Family" maxlength="64"
+          autocomplete="off" />
+        <div class="input-hint">Имя, которое видите только вы</div>
+      </div>
+      <div class="input-group">
+        <label class="input-label">Описание (видно в приложениях)</label>
+        <input class="input-field" id="create-desc" type="text" placeholder="v2hub.link" maxlength="255"
+          autocomplete="off" />
+      </div>
+
+      <div class="input-group">
+        <label class="input-label">Начальные источники</label>
+        <div class="source-row-list" id="create-source-rows"></div>
+        <button class="add-row-btn" type="button" onclick="addCreateSourceRow()">
+          + Добавить ещё строку
+        </button>
+      </div>
+
+      <button class="btn btn-primary btn-full" type="button" onclick="createSubscription()">
+        Создать
+      </button>
+    </div>
+  </div>
+
+  <!-- Edit Subscription Modal -->
+  <div class="modal-overlay" id="modal-edit-sub">
+    <div class="modal">
+      <div class="modal-handle"></div>
+
+      <button class="modal-close" type="button" onclick="closeModal('modal-edit-sub')">
+        ✕
+      </button>
+
+      <div class="modal-title">Редактировать подписку</div>
+
+      <div class="input-group">
+        <label class="input-label">Название</label>
+        <input class="input-field" id="edit-sub-name" type="text" maxlength="64" autocomplete="off" />
+      </div>
+
+      <div class="input-group">
+        <label class="input-label">Описание (видно в приложениях)</label>
+        <input class="input-field" id="edit-sub-desc" type="text" maxlength="255" placeholder="v2hub"
+          autocomplete="off" />
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-primary" type="button" onclick="saveSubEdit()">
           Сохранить
         </button>
+
+        <button class="btn btn-danger btn-primary" type="button" onclick="deleteSubConfirm()">
+          🗑 Удалить
+        </button>
       </div>
     </div>
+  </div>
 
-    <!-- QR Modal -->
-    <div class="modal-overlay" id="modal-qr">
-      <div class="modal">
-        <div class="modal-handle"></div>
+  <!-- Edit Source Comment Modal -->
+  <div class="modal-overlay" id="modal-edit-source-comment">
+    <div class="modal">
+      <div class="modal-handle"></div>
 
-        <button
-          class="modal-close"
-          type="button"
-          onclick="closeModal('modal-qr')"
-        >
-          ✕
+      <button class="modal-close" type="button" onclick="closeModal('modal-edit-source-comment')">
+        ✕
+      </button>
+
+      <div class="modal-title" id="source-settings-title">
+        Редактировать конфиг
+      </div>
+
+      <div class="input-group" id="source-comment-group">
+        <label class="input-label">Комментарий</label>
+
+        <input class="input-field" id="edit-source-comment" type="text" maxlength="255" autocomplete="off"
+          placeholder="Введите комментарий" />
+
+        <div class="input-hint" id="source-comment-hint">
+          Отображается только в интерфейсе
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-row-text">
+          <div class="setting-row-title">Скрыт от пользователей</div>
+          <div class="setting-row-hint">
+            Источник останется в подписке, но не попадёт в резолв
+          </div>
+        </div>
+        <button type="button" class="toggle-switch" id="edit-source-hidden-toggle" role="switch" aria-checked="false"
+          onclick="toggleSourceHiddenInModal()"></button>
+      </div>
+
+      <div class="advanced-toggle" id="source-advanced-toggle" onclick="toggleSourceAdvanced()">
+        <span>Расширенные настройки</span>
+        <span class="advanced-toggle-chevron">▾</span>
+      </div>
+
+      <div class="advanced-body" id="source-advanced-body">
+        <div class="advanced-body-inner">
+          <div class="setting-row">
+            <div class="setting-row-text">
+              <div class="setting-row-title">Глубина вложенности</div>
+              <div class="setting-row-hint">
+                Сколько уровней вложенных подписок разрешено (0–3)
+              </div>
+            </div>
+            <div class="depth-stepper">
+              <button type="button" class="depth-stepper-btn" id="depth-stepper-minus" onclick="stepSourceDepth(-1)">
+                −
+              </button>
+              <span class="depth-stepper-value" id="depth-stepper-value">3</span>
+              <button type="button" class="depth-stepper-btn" id="depth-stepper-plus" onclick="stepSourceDepth(1)">
+                +
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-full" type="button" onclick="saveSourceComment()">
+        Сохранить
+      </button>
+    </div>
+  </div>
+
+  <!-- QR Modal -->
+  <div class="modal-overlay" id="modal-qr">
+    <div class="modal">
+      <div class="modal-handle"></div>
+
+      <button class="modal-close" type="button" onclick="closeModal('modal-qr')">
+        ✕
+      </button>
+
+      <div class="modal-title">QR подписки</div>
+
+      <div class="qr-card">
+        <div class="qr-card-inner">
+          <img id="qr-image" alt="QR code for subscription" class="qr-image" />
+        </div>
+        <div class="qr-caption">Отсканируйте для подключения к подписке</div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" type="button" onclick="copyExportUrl()">
+          Копировать ссылку
         </button>
 
-        <div class="modal-title">QR подписки</div>
-
-        <div class="qr-card">
-          <div class="qr-card-inner">
-            <img
-              id="qr-image"
-              alt="QR code for subscription"
-              class="qr-image"
-            />
-          </div>
-          <div class="qr-caption">Отсканируйте для подключения к подписке</div>
-        </div>
-
-        <div class="modal-footer">
-          <button
-            class="btn btn-secondary"
-            type="button"
-            onclick="copyExportUrl()"
-          >
-            Копировать ссылку
-          </button>
-
-          <button class="btn btn-primary" type="button" onclick="downloadQr()">
-            Скачать QR
-          </button>
-        </div>
+        <button class="btn btn-primary" type="button" onclick="downloadQr()">
+          Скачать QR
+        </button>
       </div>
     </div>
+  </div>
 
-    <!-- Context Menus -->
-    <div class="ctx-menu" id="ctx-menu">
-      <div class="ctx-menu-item" onclick="copySourceFromCtx()">
-        📋 Копировать
-      </div>
-
-      <div
-        class="ctx-menu-item"
-        id="ctx-edit-comment"
-        onclick="editSourceCommentFromCtx()"
-      >
-        ✏️ <span id="ctx-edit-comment-label">Редактировать конфиг</span>
-      </div>
-
-      <div class="ctx-menu-item" onclick="deleteSourceFromCtx()">
-        🗑 Удалить источник
-      </div>
+  <!-- Context Menus -->
+  <div class="ctx-menu" id="ctx-menu">
+    <div class="ctx-menu-item" onclick="copySourceFromCtx()">
+      📋 Копировать
     </div>
 
-    <div class="editor-menu" id="editor-menu" style="min-width: 210px">
-      <div
-        class="editor-menu-item"
-        onclick="
+    <div class="ctx-menu-item" id="ctx-edit-comment" onclick="editSourceCommentFromCtx()">
+      ✏️ <span id="ctx-edit-comment-label">Редактировать конфиг</span>
+    </div>
+
+    <div class="ctx-menu-item" onclick="deleteSourceFromCtx()">
+      🗑 Удалить источник
+    </div>
+  </div>
+
+  <div class="editor-menu" id="editor-menu" style="min-width: 210px">
+    <div class="editor-menu-item" onclick="
           openEditSubModal();
           closeEditorMenu();
-        "
-      >
-        ✎ Редактировать подписку
-      </div>
-      <div
-        class="editor-menu-item"
-        onclick="
+        ">
+      ✎ Редактировать подписку
+    </div>
+    <div class="editor-menu-item" onclick="
           reloadSelected();
           closeEditorMenu();
-        "
-      >
-        ↻ Обновить данные
-      </div>
-      <div class="editor-divider"></div>
-      <div
-        class="editor-menu-item danger"
-        onclick="
+        ">
+      ↻ Обновить данные
+    </div>
+    <div class="editor-divider"></div>
+    <div class="editor-menu-item danger" onclick="
           deleteSubConfirm();
           closeEditorMenu();
-        "
-      >
-        🗑 Удалить подписку
-      </div>
+        ">
+      🗑 Удалить подписку
     </div>
+  </div>
 
-    <!-- Toast -->
-    <div class="toast" id="toast"></div>
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
 
-    <!-- Error Notification -->
-    <div
-      class="error-notification"
-      id="error-notification"
-      role="alert"
-      aria-live="assertive"
-    >
-      <div class="error-notification-inner">
-        <div class="error-notification-icon" id="error-icon">⚠</div>
-        <div class="error-notification-body">
-          <div class="error-notification-title" id="error-title">Ошибка</div>
-          <div class="error-notification-message" id="error-message"></div>
-          <div class="error-notification-hint" id="error-hint"></div>
-        </div>
-        <button
-          class="error-notification-close"
-          type="button"
-          onclick="
+  <!-- Error Notification -->
+  <div class="error-notification" id="error-notification" role="alert" aria-live="assertive">
+    <div class="error-notification-inner">
+      <div class="error-notification-icon" id="error-icon">⚠</div>
+      <div class="error-notification-body">
+        <div class="error-notification-title" id="error-title">Ошибка</div>
+        <div class="error-notification-message" id="error-message"></div>
+        <div class="error-notification-hint" id="error-hint"></div>
+      </div>
+      <button class="error-notification-close" type="button" onclick="
             document
               .getElementById('error-notification')
               .classList.remove('show')
-          "
-          aria-label="Закрыть"
-        >
-          ✕
-        </button>
-      </div>
+          " aria-label="Закрыть">
+        ✕
+      </button>
     </div>
+  </div>
 
-    <!-- Scripts -->
-    <!-- <script type="module" src="/static/scripts/main.js"></script> -->
-<script type="module" src="./scripts/main.js"></script>
+  <!-- Scripts -->
+  <!-- <script type="module" src="/static/scripts/main.js"></script> -->
+  <script type="module" src="./scripts/main.js"></script>
 
-  </body>
+</body>
+
 </html>
