@@ -1,585 +1,348 @@
-/**
- * Modals, Toast, and Context Menu
- */
+/* =====================================
+   MODAL OVERLAY
+===================================== */
 
-/*
- * FIX [Bug]: z-index стек переработан.
- * .save-bar        = 100  (components-advanced.css)
- * .modal-overlay   = 400  ← ВСЕГДА поверх save-bar
- * .editor-menu/ctx = 500  ← поверх модалок
- * .toast           = 600
- * .error-notif     = 700
- */
 .modal-overlay,
 .full-modal {
   position: fixed;
   inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(8px);
   z-index: 400;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.25s ease;
 }
 
-.modal-overlay.open,
-.full-modal.open {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.modal-overlay {
+.modal-overlay.show,
+.full-modal.show {
   display: flex;
-  align-items: flex-end;
-  background: rgba(0, 0, 0, 0.56);
-  backdrop-filter: blur(5px);
 }
 
-.modal {
-  width: 100%;
-  max-height: 92vh;
-  overflow: auto;
-  background: linear-gradient(
-    180deg,
-    rgba(16, 24, 40, 0.98),
-    rgba(13, 21, 35, 0.98)
-  );
-  border-radius: 24px 24px 0 0;
-  border: 1px solid var(--line);
-  box-shadow: var(--shadow);
-  transform: translateY(100%);
-  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
-  padding: 18px 16px 22px;
-  position: relative;
-}
 
-.modal-overlay.open .modal {
-  transform: translateY(0);
-}
+/* =====================================
+   MODAL BOX
+===================================== */
 
-.modal-handle {
-  width: 40px;
-  height: 4px;
-  border-radius: 99px;
-  background: rgba(255, 255, 255, 0.16);
-  margin: 0 auto 16px;
-}
+.modal,
+.full-modal-content {
+  width: min(520px, calc(100vw - 32px));
+  max-height: 90vh;
+  overflow-y: auto;
 
-.modal-title {
-  font-size: 18px;
-  font-weight: 900;
-  letter-spacing: -0.03em;
-  margin-bottom: 14px;
-}
-
-.modal-close {
-  position: absolute;
-  right: 16px;
-  top: 16px;
-  width: 36px;
-  height: 36px;
-  border-radius: 13px;
-  border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.03);
-  color: var(--muted);
-  display: grid;
-  place-items: center;
-}
-
-.modal-close:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--panel);
   color: var(--text);
+
+  border: 1px solid var(--line);
+  border-radius: 18px;
+
+  box-shadow: var(--shadow);
+
+  animation: modalIn .2s ease;
 }
 
-/* Full modal */
-.full-modal {
-  background: rgba(7, 12, 20, 0.92);
-  display: flex;
-  flex-direction: column;
-  transform: translateY(100%);
-  transition:
-    transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
-    opacity 0.2s ease;
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
-.full-modal.open {
-  transform: translateY(0);
-  opacity: 1;
-  pointer-events: auto;
-}
+
+/* =====================================
+   MODAL HEADER
+===================================== */
 
 .full-modal-header,
-.full-modal-footer {
-  padding: 16px 18px;
-  background: rgba(16, 24, 40, 0.78);
-  backdrop-filter: var(--blur);
-}
+.modal-header {
 
-.full-modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+
+  padding: 16px 18px;
+
   border-bottom: 1px solid var(--line);
+
+  background: var(--panel2);
 }
 
-.full-modal-title {
-  font-size: 17px;
-  font-weight: 900;
+
+.modal-title {
+
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
 }
 
-.full-modal-content {
-  flex: 1;
-  overflow: auto;
+
+/* =====================================
+   MODAL BODY
+===================================== */
+
+.modal-body,
+.full-modal-body {
+
   padding: 18px;
+  color: var(--muted);
+
 }
 
-.full-modal-footer {
+
+/* =====================================
+   MODAL FOOTER
+===================================== */
+
+.full-modal-footer,
+.modal-footer {
+
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+
+  padding: 16px 18px;
+
   border-top: 1px solid var(--line);
-  display: flex;
-  gap: 10px;
+
+  background: var(--panel2);
+
 }
 
-.full-modal-footer .btn {
-  flex: 1;
+
+/* =====================================
+   CLOSE BUTTON
+===================================== */
+
+.modal-close {
+
+  width: 34px;
+  height: 34px;
+
+  display: flex;
+  align-items: center;
   justify-content: center;
+
+  border-radius: 10px;
+
+  cursor: pointer;
+
+  color: var(--muted);
+
+  background: transparent;
+
+  border: 1px solid transparent;
+
+  transition: .2s;
 }
 
-/* Toast */
-.toast {
-  position: fixed;
-  left: 50%;
-  bottom: 24px;
-  transform: translateX(-50%) translateY(18px);
-  opacity: 0;
-  pointer-events: none;
-  z-index: 600;
-  padding: 11px 16px;
-  border-radius: 999px;
-  background: rgba(16, 24, 40, 0.94);
-  border: 1px solid var(--line);
+
+.modal-close:hover {
+
+  background: var(--card);
+
+  border-color: var(--line);
+
   color: var(--text);
-  box-shadow: var(--shadow);
-  transition:
-    opacity 0.22s ease,
-    transform 0.22s ease;
-  max-width: min(92vw, 560px);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+
+}
+
+
+/* =====================================
+   SETTINGS MODAL
+===================================== */
+
+#modal-settings .setting-row {
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 14px 0;
+
+  border-bottom: 1px solid var(--line);
+
+}
+
+
+#modal-settings .setting-row:last-child {
+
+  border-bottom: none;
+
+}
+
+
+#modal-settings .setting-row-title {
+
+  color: var(--text);
+
+  font-weight: 600;
+
+}
+
+
+#modal-settings .setting-row-hint {
+
+  color: var(--muted);
+
   font-size: 13px;
+
 }
 
-.toast.show {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
 
-.editor-menu {
-  position: fixed;
-  z-index: 500;
-  min-width: 180px;
-  border-radius: 18px;
+/* =====================================
+   INPUTS INSIDE MODALS
+===================================== */
+
+.modal input,
+.modal select,
+.full-modal input,
+.full-modal select {
+
+  width: 100%;
+
+  padding: 12px 14px;
+
+  border-radius: 10px;
+
   border: 1px solid var(--line);
-  background: linear-gradient(
-    180deg,
-    rgba(16, 24, 40, 0.98),
-    rgba(13, 21, 35, 0.98)
-  );
-  box-shadow: var(--shadow);
-  padding: 8px;
 
-  opacity: 0;
-  pointer-events: none;
-  transform: scale(0.96) translateY(-6px);
-  /* transform-origin set dynamically by JS based on flip direction */
+  background: var(--panel2);
 
-  transition:
-    opacity var(--t),
-    transform var(--t);
-}
-
-.editor-menu.open {
-  opacity: 1;
-  pointer-events: auto;
-  transform: scale(1) translateY(0);
-}
-
-.editor-menu-item {
-  padding: 10px 12px;
-  border-radius: 12px;
-  font-size: 14px;
   color: var(--text);
 
-  display: flex;
-  align-items: center;
-  gap: 10px;
+}
+
+
+.modal input:focus,
+.modal select:focus,
+.full-modal input:focus,
+.full-modal select:focus {
+
+  outline: none;
+
+  border-color: var(--accent);
+
+}
+
+
+/* =====================================
+   BUTTONS
+===================================== */
+
+.modal button,
+.full-modal button {
 
   cursor: pointer;
-  user-select: none;
 
-  transition:
-    background var(--t),
-    color var(--t);
 }
 
-.editor-menu-item:hover {
-  background: rgba(255, 255, 255, 0.05);
+
+.btn-primary {
+
+  background: var(--accent);
+
+  color: white;
+
+  border: none;
+
+  padding: 10px 16px;
+
+  border-radius: 10px;
+
 }
 
-.editor-menu-item.danger {
-  color: #fecdd3;
+
+.btn-secondary {
+
+  background: var(--card);
+
+  color: var(--text);
+
+  border: 1px solid var(--line);
+
+  padding: 10px 16px;
+
+  border-radius: 10px;
+
 }
 
-.editor-divider {
-  height: 1px;
-  background: var(--line);
-  margin: 6px 0;
-}
 
-/* Context menu */
+/* =====================================
+   TOAST / MENUS LAYERING
+===================================== */
+
+/*
+Layer order:
+Modal overlay      400
+Editor menu        500
+Toast messages     600
+Error messages     700
+*/
+
+
+.editor-menu,
 .ctx-menu {
+
   position: fixed;
+
   z-index: 500;
-  min-width: 180px;
-  border-radius: 18px;
-  border: 1px solid var(--line);
-  background: linear-gradient(
-    180deg,
-    rgba(16, 24, 40, 0.98),
-    rgba(13, 21, 35, 0.98)
-  );
-  box-shadow: var(--shadow);
-  padding: 8px;
-  opacity: 0;
-  pointer-events: none;
-  transform: scale(0.96) translateY(-4px);
-  /* transform-origin set dynamically by JS based on flip direction */
-  transition:
-    opacity var(--t),
-    transform var(--t);
+
 }
 
-.ctx-menu.open {
-  opacity: 1;
-  pointer-events: auto;
-  transform: scale(1) translateY(0);
+
+.toast {
+
+  position: fixed;
+
+  z-index: 600;
+
 }
 
-.ctx-menu-item {
-  padding: 10px 12px;
-  border-radius: 12px;
-  font-size: 14px;
-  color: var(--text);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  transition:
-    background var(--t),
-    color var(--t);
-  cursor: pointer;
-  user-select: none;
-}
-
-.ctx-menu-item:hover {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.ctx-menu-item.danger {
-  color: #fecdd3;
-}
-
-.ctx-divider {
-  height: 1px;
-  background: var(--line);
-  margin: 6px 0;
-}
-
-/* Responsive */
-@media (max-width: 720px) {
-  .full-modal-footer {
-    flex-direction: column;
-  }
-
-  .full-modal-footer .btn {
-    width: 100%;
-  }
-}
-
-/* ===========================
-   Error Notification
-   =========================== */
 
 .error-notification {
+
   position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%) translateY(-120%);
+
   z-index: 700;
-  width: min(92vw, 480px);
-  opacity: 0;
-  pointer-events: none;
-  transition:
-    transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
-    opacity 0.3s ease;
+
 }
 
-.error-notification.show {
-  transform: translateX(-50%) translateY(0);
-  opacity: 1;
-  pointer-events: auto;
-}
 
-.error-notification-inner {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 14px 16px;
-  background: linear-gradient(
-    135deg,
-    rgba(251, 113, 133, 0.14),
-    rgba(220, 38, 38, 0.1)
-  );
-  border: 1px solid rgba(251, 113, 133, 0.28);
-  border-radius: 18px;
-  box-shadow:
-    0 4px 24px rgba(251, 113, 133, 0.12),
-    0 2px 8px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(20px);
-}
+/* =====================================
+   MOBILE
+===================================== */
 
-.error-notification-icon {
-  font-size: 18px;
-  line-height: 1;
-  flex-shrink: 0;
-  margin-top: 1px;
-  color: #fca5a5;
-}
+@media (max-width:600px){
 
-.error-notification-icon.icon-network {
-  color: #fbbf24;
-}
-.error-notification-icon.icon-validation {
-  color: #c4b5fd;
-}
-.error-notification-icon.icon-server {
-  color: #fb7185;
-}
-.error-notification-icon.icon-unknown {
-  color: var(--muted);
-}
+  .modal,
+  .full-modal-content {
 
-.error-notification-body {
-  flex: 1;
-  min-width: 0;
-}
+    width: calc(100vw - 20px);
 
-.error-notification-title {
-  font-size: 14px;
-  font-weight: 800;
-  color: #fecdd3;
-  margin-bottom: 3px;
-  letter-spacing: -0.01em;
-}
+    border-radius: 14px;
 
-.error-notification-message {
-  font-size: 13px;
-  color: #fda4af;
-  line-height: 1.5;
-  word-break: break-word;
-  overflow-wrap: anywhere;
-}
-
-.error-notification-hint {
-  margin-top: 5px;
-  font-size: 12px;
-  color: var(--muted);
-  display: none;
-}
-
-.error-notification-hint:not(:empty) {
-  display: block;
-}
-
-.error-notification-close {
-  width: 28px;
-  height: 28px;
-  border-radius: 10px;
-  border: 1px solid rgba(251, 113, 133, 0.2);
-  background: rgba(251, 113, 133, 0.08);
-  color: #fca5a5;
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-  font-size: 11px;
-  transition:
-    background var(--t),
-    border-color var(--t),
-    color var(--t);
-}
-
-.error-notification-close:hover {
-  background: rgba(251, 113, 133, 0.16);
-  color: #fff;
-}
-
-/* Modal footer fix for responsive */
-.modal-footer {
-  display: flex;
-  gap: 10px;
-  margin-top: 16px;
-  flex-wrap: wrap;
-}
-
-.modal-footer .btn {
-  flex: 1;
-  justify-content: center;
-  min-width: 0;
-}
-
-@media (max-width: 480px) {
-  .error-notification {
-    top: 12px;
-    width: calc(100vw - 24px);
-  }
-}
-
-/* ===========================
-   Modal mobile improvements
-   =========================== */
-
-@media (max-width: 480px) {
-  /* Modals take full width on small screens */
-  .modal {
-    width: 100%;
-    max-width: 100%;
-    border-radius: 24px 24px 0 0;
-    margin-top: auto;
-    /* Allow modal to grow with content; page/overlay scrolls if needed */
-    max-height: 92dvh;
-    overflow-y: auto;
-    /* Make sure padding doesn't cause overflow */
-    box-sizing: border-box;
   }
 
-  .modal-overlay {
-    align-items: flex-end;
-    /* Overlay itself scrolls if modal taller than viewport */
-    overflow-y: auto;
-    align-items: flex-end;
+
+  .full-modal-header,
+  .modal-header {
+
+    padding:14px;
+
   }
 
-  /* Full modal — full screen on mobile */
-  .full-modal {
-    border-radius: 0;
-    height: 100dvh;
-    max-height: 100dvh;
-    overflow-y: auto;
+
+  .modal-body,
+  .full-modal-body {
+
+    padding:14px;
+
   }
 
-  /* Ensure input fields are big enough for touch */
-  .modal .input-field,
-  .modal input,
-  .modal textarea {
-    min-height: 48px;
-    font-size: 16px;
-    /* Prevent inputs from overflowing the modal */
-    width: 100%;
-    box-sizing: border-box;
-  }
-
-  /* Stack modal footer buttons */
-  .modal-footer {
-    flex-direction: column;
-  }
-
-  .modal-footer .btn {
-    width: 100%;
-    justify-content: center;
-    min-height: 48px;
-  }
-
-  /* Increase button height for touch */
-  .btn {
-    min-height: 44px;
-  }
-
-  /* Input groups must not overflow */
-  .modal .input-group {
-    width: 100%;
-    min-width: 0;
-    box-sizing: border-box;
-  }
-
-  /* Textarea should be tall enough but not overflow */
-  .modal textarea.input-field {
-    min-height: 80px;
-    resize: vertical;
-  }
-}
-
-@media (max-width: 360px) {
-  .modal {
-    padding: 16px 14px 20px;
-  }
-}
-
-
-/* --- Settings Modal Specific Styles --- */
-#modal-settings .setting-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  padding: 8px 0;
-}
-#modal-settings .setting-row-text {
-  flex: 1;
-  padding-right: 12px;
-}
-#modal-settings .setting-row-title {
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--text-primary);
-}
-#modal-settings .setting-row-hint {
-  font-size: 13px;
-  color: var(--text-secondary);
-}
-
-/* --- Toggle Switch Styles for Settings --- */
-.toggle-switch {
-  position: relative;
-  display: inline-block;
-  width: 44px;
-  height: 24px;
-  background-color: #475569; /* Grey for OFF */
-  border-radius: 12px;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  flex-shrink: 0;
-  
-  /* 🔥 YEH DO LINES ADD KAREN (OFF STATE FIX) */
-  appearance: none;
-  -webkit-appearance: none; 
-}
-
-.toggle-switch .toggle-knob {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 20px;
-  height: 20px;
-  background-color: #fff;
-  border-radius: 50%;
-  transition: transform 0.3s;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-}
-
-.toggle-switch.on {
-  background-color: #3b82f6; /* Blue for ON */
-}
-
-.toggle-switch.on .toggle-knob {
-  transform: translateX(20px);
 }
