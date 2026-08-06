@@ -232,3 +232,17 @@
     box-shadow .3s ease,
     transform .2s ease;
 }
+
+
+.provider-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.provider-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}

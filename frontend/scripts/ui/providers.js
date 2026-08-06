@@ -6,86 +6,212 @@ import { $, clearChildren, createElement } from "../utils/dom.js";
 import { escapeHtml } from "../utils/helpers.js";
 import { showScreen } from "./subscriptions.js";
 
-// Hardcoded providers (baad mein admin panel se dynamic ho sakta hai)
+
+// Recommended providers list
 const PROVIDERS = [
+
   {
     id: "mullvad",
     name: "Mullvad VPN",
-    description: "Privacy-focused, no-logs, accepts cash & crypto.",
-    image: "https://mullvad.net/static/img/logo.svg",
-    url: "https://mullvad.net/",
+    description:
+      "Privacy-focused VPN with no-logs policy, accepts cash and crypto.",
+    image:
+      "https://mullvad.net/static/img/logo.svg",
+    url:
+      "https://mullvad.net/"
   },
+
+
   {
     id: "proton",
     name: "Proton VPN",
-    description: "From the makers of ProtonMail. Strong privacy.",
-    image: "https://protonvpn.com/images/logo.svg",
-    url: "https://protonvpn.com/",
+    description:
+      "Secure VPN service from the makers of ProtonMail with strong privacy.",
+    image:
+      "https://protonvpn.com/images/logo.svg",
+    url:
+      "https://protonvpn.com/"
   },
+
+
   {
     id: "ivpn",
     name: "IVPN",
-    description: "No-logs, open-source apps, privacy oriented.",
-    image: "https://www.ivpn.net/images/logo.svg",
-    url: "https://www.ivpn.net/",
+    description:
+      "Privacy-focused VPN with open-source apps and no-logs policy.",
+    image:
+      "https://www.ivpn.net/images/logo.svg",
+    url:
+      "https://www.ivpn.net/"
   },
+
+
   {
     id: "airvpn",
     name: "AirVPN",
-    description: "Open-source, community driven, good speeds.",
-    image: "https://airvpn.org/images/logo.png",
-    url: "https://airvpn.org/",
-  },
+    description:
+      "Community-driven open-source VPN focused on privacy and security.",
+    image:
+      "https://airvpn.org/images/logo.png",
+    url:
+      "https://airvpn.org/"
+  }
+
 ];
 
+
+
+
+
 /**
- * Render providers list
+ * Render provider cards
  */
 export function renderProviders() {
-  const list = $("providers-list");
+
+
+  const list =
+    $("providers-list");
+
+
   if (!list) return;
+
+
 
   clearChildren(list);
 
+
+
   PROVIDERS.forEach((provider) => {
-    const card = createElement("button", {
-      type: "button",
-      class: "sub-card",
-      onclick: () => {
-        window.open(provider.url, "_blank", "noopener,noreferrer");
-      },
-    });
+
+
+    const card =
+      createElement("button", {
+
+        type: "button",
+
+        class: "sub-card",
+
+      });
+
+
+
+    card.setAttribute(
+      "aria-label",
+      `Open ${provider.name} website`
+    );
+
+
+    card.title =
+      `Visit ${provider.name}`;
+
+
+
+    card.addEventListener(
+      "click",
+      () => {
+
+        window.open(
+          provider.url,
+          "_blank",
+          "noopener,noreferrer"
+        );
+
+      }
+    );
+
+
 
     card.innerHTML = `
-      <div class="sub-avatar" style="background: #1e293b; display:flex; align-items:center; justify-content:center; overflow:hidden;">
-        <img src="${escapeHtml(provider.image)}" alt="${escapeHtml(provider.name)}" 
-             style="width: 28px; height: 28px; object-fit: contain;" 
-             onerror="this.style.display='none'" />
+
+      <div class="sub-avatar provider-avatar">
+
+        <img
+          src="${escapeHtml(provider.image)}"
+          alt="${escapeHtml(provider.name)} logo"
+          class="provider-logo"
+          loading="lazy"
+          onerror="this.style.display='none'"
+        />
+
       </div>
+
+
+
       <div class="sub-info">
-        <div class="sub-name">${escapeHtml(provider.name)}</div>
-        <div class="sub-desc">${escapeHtml(provider.description)}</div>
+
+        <div class="sub-name">
+
+          ${escapeHtml(provider.name)}
+
+        </div>
+
+
+        <div class="sub-desc">
+
+          ${escapeHtml(provider.description)}
+
+        </div>
+
+
       </div>
+
+
+
       <div class="sub-meta">
-        <span class="chevron">›</span>
+
+        <span class="chevron">
+
+          ›
+
+        </span>
+
       </div>
+
     `;
 
+
+
     list.appendChild(card);
+
+
   });
+
+
 }
+
+
+
+
 
 /**
  * Open providers screen
  */
 export function openProviders() {
+
+
   renderProviders();
-  showScreen("screen-providers");
+
+
+  showScreen(
+    "screen-providers"
+  );
+
+
 }
 
+
+
+
+
 /**
- * Go back to list
+ * Return to subscriptions list
  */
 export function goBackToList() {
-  showScreen("screen-list");
+
+
+  showScreen(
+    "screen-list"
+  );
+
+
 }
