@@ -35,6 +35,7 @@
 
   border: 1px solid var(--line);
   border-radius: 18px;
+  padding: 16px;
 
   box-shadow: var(--shadow);
 

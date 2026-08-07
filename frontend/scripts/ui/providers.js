@@ -3,96 +3,50 @@
  */
 
 import { $, clearChildren, createElement } from "../utils/dom.js";
-import { escapeHtml } from "../utils/helpers.js";
 import { showScreen } from "./subscriptions.js";
 
 
-// Recommended providers list
-const PROVIDERS = [
-
-  {
-    id: "mullvad",
-    name: "Mullvad VPN",
-    description:
-      "Privacy-focused VPN with no-logs policy, accepts cash and crypto.",
-    image:
-      "https://mullvad.net/static/img/logo.svg",
-    url:
-      "https://mullvad.net/"
-  },
-
-
-  {
-    id: "proton",
-    name: "Proton VPN",
-    description:
-      "Secure VPN service from the makers of ProtonMail with strong privacy.",
-    image:
-      "https://protonvpn.com/images/logo.svg",
-    url:
-      "https://protonvpn.com/"
-  },
-
-
-  {
-    id: "ivpn",
-    name: "IVPN",
-    description:
-      "Privacy-focused VPN with open-source apps and no-logs policy.",
-    image:
-      "https://www.ivpn.net/images/logo.svg",
-    url:
-      "https://www.ivpn.net/"
-  },
-
-
-  {
-    id: "airvpn",
-    name: "AirVPN",
-    description:
-      "Community-driven open-source VPN focused on privacy and security.",
-    image:
-      "https://airvpn.org/images/logo.png",
-    url:
-      "https://airvpn.org/"
-  }
-
-];
-
-
-
+/**
+ * Recommended providers list
+ *
+ * Future:
+ * This will be loaded from admin/API.
+ * Currently empty until providers are configured.
+ */
+const PROVIDERS = [];
 
 
 /**
  * Render provider cards
  */
 export function renderProviders() {
-
-
-  const list =
-    $("providers-list");
-
+  const list = $("providers-list");
 
   if (!list) return;
-
-
 
   clearChildren(list);
 
 
+  // Empty state
+  if (PROVIDERS.length === 0) {
+    const empty = createElement("div", {
+      class: "empty-state",
+    });
 
+    empty.textContent = "No providers yet";
+
+    list.appendChild(empty);
+    return;
+  }
+
+
+  // Render providers
   PROVIDERS.forEach((provider) => {
 
-
-    const card =
-      createElement("button", {
-
-        type: "button",
-
-        class: "sub-card",
-
-      });
-
+    const card = createElement("button", {
+      type: "button",
+      class: "sub-card",
+    });
 
 
     card.setAttribute(
@@ -101,85 +55,90 @@ export function renderProviders() {
     );
 
 
-    card.title =
-      `Visit ${provider.name}`;
+    card.title = `Visit ${provider.name}`;
+
+
+    card.addEventListener("click", () => {
+      window.open(
+        provider.url,
+        "_blank",
+        "noopener,noreferrer"
+      );
+    });
+
+
+    const avatar = createElement("div", {
+      class: "sub-avatar provider-avatar",
+    });
+
+
+    const image = createElement("img", {
+      class: "provider-logo",
+    });
+
+
+    image.src = provider.image;
+    image.alt = `${provider.name} logo`;
+    image.loading = "lazy";
+
+
+    image.onerror = () => {
+      image.style.display = "none";
+    };
+
+
+    avatar.appendChild(image);
+
+
+    const info = createElement("div", {
+      class: "sub-info",
+    });
+
+
+    const name = createElement("div", {
+      class: "sub-name",
+    });
+
+    name.textContent = provider.name;
+
+
+    const description = createElement("div", {
+      class: "sub-desc",
+    });
+
+    description.textContent = provider.description;
+
+
+    info.appendChild(name);
+    info.appendChild(description);
 
 
 
-    card.addEventListener(
-      "click",
-      () => {
-
-        window.open(
-          provider.url,
-          "_blank",
-          "noopener,noreferrer"
-        );
-
-      }
-    );
+    const meta = createElement("div", {
+      class: "sub-meta",
+    });
 
 
+    const arrow = createElement("span", {
+      class: "chevron",
+    });
 
-    card.innerHTML = `
+    arrow.textContent = "›";
 
-      <div class="sub-avatar provider-avatar">
 
-        <img
-          src="${escapeHtml(provider.image)}"
-          alt="${escapeHtml(provider.name)} logo"
-          class="provider-logo"
-          loading="lazy"
-          onerror="this.style.display='none'"
-        />
-
-      </div>
+    meta.appendChild(arrow);
 
 
 
-      <div class="sub-info">
-
-        <div class="sub-name">
-
-          ${escapeHtml(provider.name)}
-
-        </div>
-
-
-        <div class="sub-desc">
-
-          ${escapeHtml(provider.description)}
-
-        </div>
-
-
-      </div>
-
-
-
-      <div class="sub-meta">
-
-        <span class="chevron">
-
-          ›
-
-        </span>
-
-      </div>
-
-    `;
-
+    card.appendChild(avatar);
+    card.appendChild(info);
+    card.appendChild(meta);
 
 
     list.appendChild(card);
 
-
   });
-
-
 }
-
-
 
 
 
@@ -188,18 +147,11 @@ export function renderProviders() {
  */
 export function openProviders() {
 
-
   renderProviders();
 
-
-  showScreen(
-    "screen-providers"
-  );
-
+  showScreen("screen-providers");
 
 }
-
-
 
 
 
@@ -208,10 +160,6 @@ export function openProviders() {
  */
 export function goBackToList() {
 
-
-  showScreen(
-    "screen-list"
-  );
-
+  showScreen("screen-list");
 
 }

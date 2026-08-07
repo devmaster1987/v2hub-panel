@@ -242,6 +242,6 @@ function createSettingsModal() {
   Expose only handlers required by HTML onclick
 */
 
+window.openSettings = openSettings;
 window.closeSettings = closeSettings;
-
 window.toggleTheme = toggleTheme;

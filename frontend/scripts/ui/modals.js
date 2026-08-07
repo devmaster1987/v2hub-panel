@@ -23,8 +23,9 @@ function unlockScroll() {
  */
 export function openModal(id) {
   const modal = $(id);
-  if (!modal || modal.classList.contains("open")) return;
-  addClass(modal, "open");
+  if (!modal || modal.classList.contains("show")) return;
+
+  addClass(modal, "show");
   lockScroll();
 }
 
@@ -34,8 +35,9 @@ export function openModal(id) {
  */
 export function closeModal(id) {
   const modal = $(id);
-  if (!modal || !modal.classList.contains("open")) return;
-  removeClass(modal, "open");
+  if (!modal || !modal.classList.contains("show")) return;
+
+  removeClass(modal, "show");
   unlockScroll();
 }
 
@@ -68,7 +70,7 @@ export function setupModalHandlers() {
     }
 
     // Close the last opened modal (all .modal-overlay.open)
-    const openModals = document.querySelectorAll(".modal-overlay.open");
+const openModals = document.querySelectorAll(".modal-overlay.show");
     if (openModals.length > 0) {
       closeModal(openModals[openModals.length - 1].id);
     }
